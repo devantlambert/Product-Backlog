@@ -1,0 +1,20 @@
+# Waypoint: product roadmap
+
+A single place to manage the product backlog and share the state of every project across the organization.
+
+## What it does
+
+- **Backlog:** a ranked list of projects with stage, budget, estimate and dependencies.
+- **Stages:** Intake → Discovery → Ready for Dev → In Development → UAT → Released → Post-release Review.
+- **Capacity forecast:** a weekly simulation hands roadmap capacity to in-flight work first, then to the backlog in rank order. It respects dependencies and each project's maximum team size, and produces forecast start and release dates.
+- **Project pages:** owner, budget against estimated cost, dependencies, and deliverables by team (Problem Statement, System Documentation, UAT Workbook, Marketing Hand-off, Post-release Analysis).
+- **Roles:** Product and the Head of Development edit. C-Suite, Marketing, Support and Customer Success get read-only views tailored to them.
+- **Stage alerts:** each team subscribes to the stages it cares about.
+
+## Status
+
+`prototype/index.html` is a self-contained clickable prototype with fictional sample data. Edits are stored in the browser's localStorage. Open the file in a browser to try it.
+
+Next step: a Next.js + Supabase app (auth, roles, shared database, email/Slack alerts) deployed on Vercel.
+
+All sample data is fictional.
