@@ -1,4 +1,4 @@
-# Waypoint: product roadmap
+# Roadmap by Dev
 
 A single place to manage the product backlog and share the state of every project across the organization.
 
@@ -16,5 +16,7 @@ A single place to manage the product backlog and share the state of every projec
 `prototype/index.html` is a self-contained clickable prototype with fictional sample data. Edits are stored in the browser's localStorage. Open the file in a browser to try it.
 
 Next step: a Next.js + Supabase app (auth, roles, shared database, email/Slack alerts) deployed on Vercel.
+
+Styled with the Dev brand standard (tokens v1.0.0): paper neutrals, slate blue Roadmap accent, IBM Plex Sans, 8 px corners, dates as 10-Nov-2026.
 
 All sample data is fictional.
