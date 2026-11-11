@@ -920,7 +920,6 @@ function drawer(){
   const unblocks=S.projects.flatMap(q=>q.deps.filter(d=>d.id===p.id).map(d=>[q,d]));
   if(depDraft.pid!==p.id)depDraft={pid:p.id,id:'',then:'start',on:'released',lag:0};
   const draft={id:+depDraft.id,on:depDraft.on,then:depDraft.then,lag:Math.max(0,Math.round(+depDraft.lag||0))};
-  const dtype=depType(draft);
   const dupe=p.deps.some(d=>sameDep(d,draft));
   const fc=DONE.has(p.stage)?'Shipped':f.noSize?'Add an estimate or a budget to forecast':f.unsched?'Can\'t be scheduled':f.heldBy?`${fmtW(f.start)} to ${fmtW(relW(f))} (release held by a dependency)`:f.inflight?`In flight · ships ${fmtW(relW(f))}`:`${fmtW(f.start)} to ${fmtW(relW(f))}`;
   const fact=(label,val,input)=>`<div><span class="label">${label}</span><div class="v">${ed&&input?input:val}</div></div>`;
@@ -949,8 +948,7 @@ function drawer(){
           <div class="row">This project can't <select id="dep-then" data-dep="then" aria-label="Start or finish"><option value="start" ${draft.then==='start'?'selected':''}>start</option><option value="finish" ${draft.then==='finish'?'selected':''}>finish</option></select>
             until <select id="dep-proj" data-dep="id" aria-label="Project"><option value="">choose a project…</option>${others.map(q=>`<option value="${q.id}" ${String(q.id)===String(depDraft.id)?'selected':''}>${esc(q.name)}</option>`).join('')}</select></div>
           <div class="row"><select id="dep-on" data-dep="on" aria-label="Stage">${GATE_STAGES.map(st=>`<option value="${st}" ${st===draft.on?'selected':''}>${onText(st)}</option>`).join('')}</select>
-            plus <input id="dep-lag" type="number" min="0" step="1" value="${draft.lag}" data-dep="lag" aria-label="Days after" style="width:80px"> days
-            <span class="muted">Type</span> <select id="dep-type" data-dep="type" aria-label="Dependency type">${DEP_TYPES.map(t=>`<option value="${t.id}" ${t.id===dtype?'selected':''}>${t.name}${t.id==='gate'?'':' ('+t.id+')'}</option>`).join('')}</select></div>
+            plus <input id="dep-lag" type="number" min="0" step="1" value="${draft.lag}" data-dep="lag" aria-label="Days after" style="width:80px"> days</div>
           <div class="row"><button class="btn primary sm" data-act="adddep" ${!depDraft.id||dupe?'disabled':''}>Add dependency</button><span class="preview">${depDraft.id?(dupe?'This dependency already exists.':depLong(draft)+'.'):'Pick a project to see how the rule reads.'}</span></div>
         </div>`:''}</div>
         <div><span class="label">Projects waiting on this one</span>${unblocks.length?`<ul class="deprows">${unblocks.map(([q,d])=>`<li><span><a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a> can't ${d.then} until this project ${onText(d.on)}${lagTxt(d)} ${depTag(d)}</span></li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</div>
