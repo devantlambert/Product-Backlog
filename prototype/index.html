@@ -139,7 +139,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .dots i.done{background:var(--ok);border-color:var(--ok)} .dots i.prog{background:var(--warn);border-color:var(--warn)} .dots i.late{background:var(--bad);border-color:var(--bad)} .dots i.na{opacity:.35}
 
 /* board */
-.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(232px,1fr);gap:12px;overflow-x:auto;padding-bottom:12px}
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(164px,1fr);gap:12px;overflow-x:auto;padding-bottom:12px}
 .col{background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);padding:12px;min-height:200px;border-top:4px solid var(--sc)}
 .col.over{outline:2px dashed var(--accent);outline-offset:-2px}
 .col h3{display:flex;justify-content:space-between;font-size:14px;line-height:20px;margin-bottom:12px}
@@ -148,7 +148,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .card:hover{border-color:var(--muted)}
 .card[draggable="true"]{cursor:grab}
 .card .t{font-weight:600}
-.card .m{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;line-height:16px;color:var(--muted)}
+.card .m{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px;font-size:12px;line-height:16px;color:var(--muted)}
 
 /* timeline */
 .tl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
@@ -989,7 +989,7 @@ function render(){
   const sel=document.getElementById('role');
   sel.innerHTML=ROLES.map(r=>`<option value="${r.id}" ${r.id===role?'selected':''}>${r.name}${r.edit?'':' (view only)'}</option>`).join('');
   const fn={home:vHome,backlog:vBacklog,board:vBoard,timeline:vTimeline,releases:vReleases,release:vRelease,capacity:vCapacity,alerts:vAlerts}[view];
-  const mainEl=document.getElementById('main');mainEl.classList.toggle('wide',view==='backlog');mainEl.innerHTML=fn();
+  const mainEl=document.getElementById('main');mainEl.classList.toggle("wide",view==="backlog"||view==="board"||view==="timeline");mainEl.innerHTML=fn();
   drawer();
 }
 const curHash=()=>view==='release'?'release-'+relId:view;
