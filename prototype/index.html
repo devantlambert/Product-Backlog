@@ -233,6 +233,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .depform{display:grid;gap:8px;margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:var(--r)}
 .depform .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
 .depform select{max-width:100%}
+.linkin{display:flex;gap:8px;align-items:center}.linkin input{flex:1;min-width:0}.linkin .btn{flex:none;text-decoration:none;color:var(--accent)}
 .depform .preview{font-size:12px;line-height:16px;color:var(--muted)}
 .dtable input[type=url]{width:100%}
 .hist li{font-size:14px}
@@ -370,6 +371,7 @@ const depLong=(d,a='This project',b)=>`${a} can't ${d.then} until ${b||esc(byId(
 const lagHtml=d=>+d.lag>0?` plus <b>${+d.lag} day${+d.lag===1?'':'s'}</b>`:'';
 const onHtml=on=>`<b>${onText(on)}</b>`;
 const depHtml=(d,a='This project')=>`${a} can't <b>${d.then}</b> until <b>${esc(byId(d.id)?.name||'?')}</b> ${onHtml(d.on)}${lagHtml(d)}`;
+const openBtn=u=>/^https?:\/\/\S+/.test(u||'')?`<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Open link in a new tab">Open<svg class="ico" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>`:'';
 const sameDep=(a,b)=>a.id===b.id&&a.on===b.on&&a.then===b.then&&(+a.lag||0)===(+b.lag||0);
 const normDep=d=>typeof d==='number'?{id:d,on:'released',then:'start'}:d;
 const BF0={sec:'all',stage:'',start:'',rel:'',health:'',bundle:''};
@@ -898,7 +900,7 @@ function vRelease(){
       <ul class="acts">${acts.map(a=>{const late=actLate(r,a);return `<li class="${a.status} ${late?'late':''}">
         <div class="a-main"><div class="a-name">${ed?`<input type="text" id="a-${a.id}-n" data-act-id="${a.id}" data-ak="name" value="${esc(a.name)}" aria-label="Activity name">`:esc(a.name)}</div>
           <div class="a-meta"><span class="num">Due ${fmtD(actDue(r,a))}</span>${late?' <span class="pill bad">Overdue</span>':''} · ${can?`<input type="text" id="a-${a.id}-o" data-act-id="${a.id}" data-ak="owner" value="${esc(a.owner)}" placeholder="Owner" aria-label="Owner" class="a-owner">`:esc(a.owner||'No owner')}</div>
-          ${can?`<input type="url" id="a-${a.id}-l" data-act-id="${a.id}" data-ak="link" value="${esc(a.link)}" placeholder="Link to the work (https://)" aria-label="Link" class="a-link">`:a.link?`<a class="linktext" href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.link.replace(/^https?:\/\//,''))}</a>`:''}</div>
+          ${can?`<div class="linkin"><input type="url" id="a-${a.id}-l" data-act-id="${a.id}" data-ak="link" value="${esc(a.link)}" placeholder="Link to the work (https://)" aria-label="Link" class="a-link">${openBtn(a.link)}</div>`:a.link?`<a class="linktext" href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.link.replace(/^https?:\/\//,''))}</a>`:''}</div>
         <div class="a-side">${can?`<select id="a-${a.id}-s" data-act-id="${a.id}" data-ak="status" aria-label="Status">${ACT_STATUS.map(([v,l])=>`<option value="${v}" ${a.status===v?'selected':''}>${l}</option>`).join('')}</select>`:`<span class="pill ${a.status==='done'?'ok':a.status==='blocked'?'warn':late?'bad':'n'}">${ACT_STATUS.find(s=>s[0]===a.status)[1]}</span>`}
           ${ed?`<div class="a-due"><label class="muted" for="a-${a.id}-d">Due</label><input type="date" id="a-${a.id}-d" data-act-id="${a.id}" data-ak="due" value="${actDue(r,a)}"></div><button class="btn sm ghost" data-actrm="${a.id}" aria-label="Remove activity">Remove</button>`:''}</div></li>`}).join('')}</ul>
       ${ed?`<button class="btn sm ghost" data-actadd="${esc(t)}"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add activity</button>`:''}
@@ -959,7 +961,7 @@ function drawer(){
       <section class="panel"><header><h3>Deliverables by team</h3></header><div class="body" style="overflow-x:auto"><table class="dtable"><thead><tr><th>Deliverable</th><th>Team</th><th>Needed</th><th>Status</th><th>Link</th></tr></thead><tbody>
         ${DELIVS.map(dl=>{const x=p.deliverables[dl.id];const st=delState(p,dl);return `<tr><td><b>${dl.name}</b>${st==='late'?' <span class="pill bad">Overdue</span>':''}</td><td class="muted">${dl.team}</td><td class="muted" style="font-size:.8rem">${dl.when}</td>
         <td>${ed?`<select id="d-${dl.id}-s" data-dl="${dl.id}" data-k="status">${DSTATUS.map(([v,l])=>`<option value="${v}" ${x.status===v?'selected':''}>${l}</option>`).join('')}</select>`:`<span class="pill ${st==='done'?'ok':st==='late'?'bad':st==='prog'?'warn':'n'}">${DSTATUS.find(s=>s[0]===x.status)[1]}</span>`}</td>
-        <td>${ed?`<input type="url" id="d-${dl.id}-l" data-dl="${dl.id}" data-k="link" placeholder="https://" value="${esc(x.link)}">`:x.link?`<a class="linktext" href="${esc(x.link)}" target="_blank" rel="noopener" title="${esc(x.link)}">${esc(x.link.replace(/^https?:\/\//,''))}</a>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}
+        <td>${ed?`<div class="linkin"><input type="url" id="d-${dl.id}-l" data-dl="${dl.id}" data-k="link" placeholder="https://" value="${esc(x.link)}">${openBtn(x.link)}</div>`:x.link?`<a class="linktext" href="${esc(x.link)}" target="_blank" rel="noopener" title="${esc(x.link)}">${esc(x.link.replace(/^https?:\/\//,''))}</a>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}
       </tbody></table></div></section>
       <section class="panel"><header><h3>Stage history</h3></header><div class="body"><ul class="list hist">${[...p.history].reverse().map(h=>`<li><span>Entered ${stageChip(h.to)}${h.by?` <span class="muted">by ${esc(h.by)}</span>`:''}</span><span class="when num muted">${fmtD(h.date)}</span></li>`).join('')||'<li class="muted">Still in Intake.</li>'}</ul></div></section>
       ${ed?`<div><button class="btn danger" data-act="delete">${confirmDel===p.id?'Delete this project? Click again to confirm':'Delete project'}</button></div>`:''}
