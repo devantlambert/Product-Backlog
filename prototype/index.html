@@ -1,4 +1,27 @@
 <title>Roadmap by Dev</title>
+<!--
+  Roadmap by Dev: clickable prototype of a product roadmap tool.
+  One self-contained file: CSS, HTML shell and all JavaScript live here. No build step,
+  no framework, no server. Open it in a browser to use it.
+  Data is fictional sample data (seed() below) saved to this browser's localStorage.
+
+  How the file is laid out:
+    <style>   Dev brand tokens, then styles grouped by screen (header, home, table,
+              board, timeline, capacity, alerts, drawer, filters, releases).
+    <body>    A fixed shell: header (nav + role picker), <main id="main"> which every
+              view renders into, the project drawer, a toast and a tooltip.
+    <script>  reference data -> sample data -> releases model -> state -> helpers ->
+              forecast engine -> stage changes -> views -> release views -> drawer ->
+              routing/render -> event handlers -> drag and drop.
+
+  Rendering model: every view is a function that returns an HTML string. render()
+  writes the current view into <main> and redraws the drawer. Any change to state
+  calls save() then render(). Events are handled by a few document-level listeners
+  that look for data-* attributes on what was clicked or changed.
+
+  See docs/SYSTEM.md in the repo for the full write-up, and handoff/SPEC.md for the
+  product specification.
+-->
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -110,7 +133,7 @@ main{padding-block:32px 64px}
 .kpis div b{display:block;font-size:20px;line-height:28px;font-variant-numeric:tabular-nums}
 .empty{color:var(--muted);font-size:14px;padding:8px 0;margin:0}
 
-/* table (one step tighter) */
+/* backlog table (one step tighter) */
 .tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 table{border-collapse:collapse;width:100%;min-width:1360px;font-size:14px;line-height:20px}
 th,td{text-align:left;padding:8px 12px;border-top:1px solid var(--line);vertical-align:middle}
@@ -223,6 +246,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .dtable td{overflow:hidden}
 .dtable select{width:100%}
 .linktext{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* backlog filters and the bulk-select bar */
 .filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;margin-bottom:16px}
 .filters .f{display:grid;gap:4px}
 .filters .f label,.filters .f .label{font-size:12px;line-height:16px;font-weight:600;color:var(--muted)}
@@ -260,6 +284,7 @@ td.rank .pick{width:16px;height:16px;accent-color:var(--accent);vertical-align:m
 .bulkbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 12px;margin-bottom:12px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--r);font-size:14px}
 .pbar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin:6px 0 4px;border:1px solid var(--line)}
 .pbar i{display:block;height:100%;background:var(--accent)}
+/* releases: list cards, release page, runway swimlane, team cards */
 .relcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px}
 .relcard{display:grid;gap:10px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;text-decoration:none;color:var(--fg)}
 .relcard:hover{border-color:var(--accent)}
@@ -332,14 +357,19 @@ footer.dev-footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content
     <div class="rolebox"><label for="role">Viewing as</label><select id="role"></select></div>
   </div>
 </header>
+<!-- Every view (Home, Backlog, Stages...) is rendered into #main by render(). -->
 <main class="wrap" id="main"></main>
 <footer class="dev-footer"><div class="wrap"><span class="dev-byline">Roadmap by <b>Dev</b></span><span>Prototype with fictional sample data. Your edits are saved in this browser only. <button class="btn sm ghost" data-act="reset">Reset sample data</button></span></div></footer>
 <div id="scrim" hidden></div>
+<!-- Project detail panel, filled by drawer() when a project is open (URL #project-<id>). -->
 <aside id="drawer" hidden aria-label="Project details"></aside>
 <div id="toast" hidden role="status"></div><div id="tip" hidden></div>
 
 <script>
+// Fixed lists the whole app is built on. Changing these changes the product's
+// vocabulary everywhere (tables, pickers, alerts).
 // ---------- reference data ----------
+// The seven stages, in order. A project's stage is one of these ids. SI() gives the index, so stages can be compared with < and >.
 const STAGES=[
   {id:'intake',name:'Intake'},
   {id:'discovery',name:'Discovery'},
@@ -350,8 +380,12 @@ const STAGES=[
   {id:'review',name:'Post-release Review'}];
 const SI=id=>STAGES.findIndex(s=>s.id===id);
 const SNAME=id=>STAGES[SI(id)].name;
+// DONE stages are shipped work (shown in the Shipped section). ACTIVE stages are in flight and get capacity first in the forecast.
 const DONE=new Set(['released','review']);
 const ACTIVE=new Set(['dev','uat']);
+// The five deliverables every project tracks. lateAt is the stage at which an
+// unfinished deliverable becomes overdue (see delState). The analysis has no
+// lateAt; it's overdue once the project is in Post-release Review.
 const DELIVS=[
   {id:'ps', name:'Problem Statement',     team:'Product',          lateAt:'ready',    when:'Before Ready for Dev'},
   {id:'sys',name:'System Documentation',  team:'Development',      lateAt:'uat',      when:'Before UAT'},
@@ -359,6 +393,9 @@ const DELIVS=[
   {id:'mkt',name:'Marketing Hand-off',    team:'Marketing',        lateAt:'released', when:'Before Release'},
   {id:'pra',name:'Post-release Analysis', team:'Product & Analytics',lateAt:null,     when:'During Post-release Review'}];
 const DSTATUS=[['none','Not started'],['prog','In progress'],['done','Done'],['na','Not needed']];
+// Who is viewing. edit:true roles can change anything; the rest are read-only
+// except for their own alert subscriptions and their own team's release activities.
+// home is the view the role lands on. In the prototype the role is just a picker.
 const ROLES=[
   {id:'product',  name:'Product (you)',      edit:true,  home:'home', note:'You can edit everything: rank the backlog, move stages, set budgets and capacity.'},
   {id:'dev',      name:'Head of Development',edit:true,  home:'capacity', note:'You can edit everything. Capacity and estimates drive every forecast date.'},
@@ -366,6 +403,12 @@ const ROLES=[
   {id:'marketing',name:'Marketing',          edit:false, home:'home', note:'Read-only. Your home shows upcoming launches and the status of each marketing hand-off.'},
   {id:'support',  name:'Support',            edit:false, home:'home', note:'Read-only. Your home shows what is about to ship and whether system docs are ready.'},
   {id:'cs',       name:'Customer Success',   edit:false, home:'home', note:'Read-only. Your home shows what is about to ship so you can brief customers.'}];
+// Dependency presets. Every dependency is stored as {id, on, then, lag}:
+//   id    the project being waited on
+//   on    the stage that project must reach ('released' = it ships, 'dev' = it starts)
+//   then  'start' (this project can't enter In Development) or 'finish' (can't be released)
+//   lag   extra days to wait after that
+// FS/SS/FF/SF are just named combinations of on + then; anything else is a 'gate'.
 const DEP_TYPES=[
   {id:'FS',name:'Finish to start',on:'released',then:'start'},
   {id:'SS',name:'Start to start',on:'dev',then:'start'},
@@ -373,6 +416,7 @@ const DEP_TYPES=[
   {id:'SF',name:'Start to finish',on:'dev',then:'finish'},
   {id:'gate',name:'Custom stage',on:null,then:null}];
 const GATE_STAGES=['discovery','ready','dev','uat','released','review'];
+// Small text builders for showing a dependency as a tag, a sentence, or HTML.
 const depType=d=>(DEP_TYPES.find(t=>t.on===d.on&&t.then===d.then)||{id:'gate'}).id;
 const lagTxt=d=>+d.lag>0?` plus ${+d.lag} day${+d.lag===1?'':'s'}`:'';
 const depTag=d=>{const t=depType(d);return `<span class="deptag" title="${esc(depLong(d))}">${t==='gate'?(d.then==='start'?'Start':'Finish')+' at '+SNAME(d.on):t}${+d.lag>0?' +'+(+d.lag)+'d':''}</span>`};
@@ -383,17 +427,23 @@ const onHtml=on=>`<b>${onText(on)}</b>`;
 const depHtml=(d,a='This project')=>`${a} can't <b>${d.then}</b> until <b>${esc(byId(d.id)?.name||'?')}</b> ${onHtml(d.on)}${lagHtml(d)}`;
 const openBtn=u=>/^https?:\/\/\S+/.test(u||'')?`<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Open link in a new tab">Open<svg class="ico" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>`:'';
 const sameDep=(a,b)=>a.id===b.id&&a.on===b.on&&a.then===b.then&&(+a.lag||0)===(+b.lag||0);
+// Old saved data stored a dependency as a bare project id; treat that as finish-to-start.
 const normDep=d=>typeof d==='number'?{id:d,on:'released',then:'start'}:d;
+// Backlog filters (BF), remembered in localStorage. BF0 is the 'no filters' state.
+// SEL holds the ids ticked for bulk actions; dragRow is the row being dragged.
 const BF0={sec:'all',stage:'',start:'',rel:'',health:'',bundle:''};
 const SEL=new Set(); let dragRow=null;
 let BF={...BF0}; try{BF={...BF0,...JSON.parse(localStorage.getItem('roadmap-filters')||'{}')}}catch(e){}
 const saveBF=()=>{try{localStorage.setItem('roadmap-filters',JSON.stringify(BF))}catch(e){}};
 const bfActive=()=>Object.keys(BF0).some(k=>BF[k]!==BF0[k]);
+// Budget health bucket for a project: no budget, no spend yet, over, 90%+ used, or ok.
 const healthKey=p=>!p.budget?'nobudget':!p.spent?'nospend':p.spent>p.budget?'over':p.spent/p.budget>=.9?'high':'ok';
 const HEALTH_OPTS=[['ok','Under 90% used'],['high','90% or more used'],['over','Over budget'],['nospend','No spend yet'],['nobudget','No budget']];
 const START_OPTS=[['flight','In flight'],['w4','Within 4 weeks'],['m3','Within 3 months'],['m6','Within 6 months'],['later','More than 6 months out'],['none','Can\'t be scheduled']];
 const REL_OPTS=[['w4','Within 4 weeks'],['m3','Within 3 months'],['m6','Within 6 months'],['later','More than 6 months out'],['none','Can\'t be scheduled'],['shipped','Already shipped']];
+// Is week offset w (0 = this week) inside a filter window like 'within 3 months'?
 function inWindow(key,w){return key==='w4'?w<4:key==='m3'?w<13:key==='m6'?w<26:key==='later'?w>=26:true}
+// Does project p (with forecast f, in backlog section sec) pass every active filter?
 function bfMatch(p,f,sec){
   if(BF.sec!=='all'&&BF.sec!==sec)return false;
   if(BF.stage&&p.stage!==BF.stage)return false;
@@ -414,13 +464,29 @@ function bfMatch(p,f,sec){
   }
   return true;
 }
+// The half-filled 'Add a dependency' form in the drawer, kept between re-renders.
 let depDraft={id:'',then:'start',on:'released',lag:0};
+// Top navigation: [hash, label]. The hash in the URL picks the view (see route()).
 const VIEWS=[['home','Home'],['backlog','Backlog'],['board','Stages'],['timeline','Timeline'],['releases','Releases'],['capacity','Capacity'],['alerts','Alerts']];
 
+// seed() builds the starting data. Dates are relative to today (d(30) = 30 days ago)
+// so the sample always looks current. Names and projects are fictional.
 // ---------- sample data (fictional) ----------
 function d(daysAgo){const t=new Date();t.setDate(t.getDate()-daysAgo);return t.toISOString().slice(0,10)}
+// Build a deliverables object from five statuses; done and in-progress ones get a placeholder link.
 function del(ps,sys,uat,mkt,pra){const s={ps,sys,uat,mkt,pra};const o={};for(const k in s)o[k]={status:s[k]||'none',link:s[k]==='done'||s[k]==='prog'?'https://docs.example.com/'+k:''};return o}
 function seed(){
+  // P() fills in defaults for a project. Project fields:
+  //   id, name, stage, owner, summary
+  //   budget, estimate, spent   all in developer weeks (never dollars)
+  //   committed                 true = Committed section, false = Everything else
+  //   progress                  % of development done (only used while in dev/UAT)
+  //   maxDevs                   most developers it can use at once (caps weekly capacity)
+  //   deps                      dependencies, see DEP_TYPES
+  //   deliverables              {ps|sys|uat|mkt|pra: {status, link}}
+  //   history                   [{date, from, to, by}] stage changes, oldest first
+  //   releaseId                 the release it's bundled into, or null
+  // The ORDER of S.projects is the backlog rank (committed first).
   const P=(id,name,stage,o)=>Object.assign({id,name,stage,progress:0,owner:'Jordan K.',budget:0,spent:0,committed:false,estimate:0,maxDevs:3,deps:[],summary:'',history:[]},o);
   const projects=[
     P(1,'Self-serve billing portal','uat',{progress:92,owner:'Jordan K.',budget:20,spent:17,committed:true,estimate:18,maxDevs:3,summary:'Let account admins update payment methods, download invoices and change plans without contacting support.',deliverables:del('done','done','prog','prog','none'),history:[{date:d(120),to:'discovery'},{date:d(90),to:'ready'},{date:d(70),to:'dev'},{date:d(6),to:'uat'}]}),
@@ -439,6 +505,9 @@ function seed(){
     P(8,'Onboarding checklist redesign','review',{owner:'Marcus T.',budget:9,spent:8,committed:true,estimate:8,maxDevs:2,progress:100,summary:'Guided first-week checklist for new accounts.',deliverables:del('done','done','done','done','prog'),history:[{date:d(160),to:'discovery'},{date:d(130),to:'ready'},{date:d(110),to:'dev'},{date:d(70),to:'uat'},{date:d(45),to:'released'},{date:d(15),to:'review'}]}),
   ];
   return {
+    // v is the data version: saved data with a different v is thrown away and re-seeded.
+    // capacity.devs x roadmapPct% = developer weeks of roadmap work per week.
+    // subs maps role -> stages it wants alerts for. alerts is the feed, newest first.
     v:3, nextId:15,
     capacity:{devs:10, roadmapPct:75, uatWeeks:1},
     projects,
@@ -452,10 +521,14 @@ function seed(){
   };
 }
 
+// A release bundles projects for a target date. Each release has a runway of
+// activities, each owned by a team and due a number of days (off) before or after
+// the release date. ACT_TEMPLATE is the standard runway every new release starts with.
 // ---------- releases: model ----------
 const REL_STATUS=[['planning','Planning'],['locked','Scope locked'],['released','Released']];
 const ACT_STATUS=[['todo','Not started'],['prog','In progress'],['done','Done'],['blocked','Blocked']];
 const REL_TEAMS=['Product','Development','QA','Documentation','Marketing','Support','Customer Success','Release management'];
+// Viewer roles that own a release team, so they can update that team's activities.
 const ROLE_TEAM={marketing:'Marketing',support:'Support',cs:'Customer Success'};
 const TEAM_OWNER={'Product':'Jordan K.','Development':'Priya S.','QA':'Tom H.','Documentation':'Kim W.','Marketing':'Ana R.','Support':'Leo M.','Customer Success':'Sara B.','Release management':'Sam R.'};
 const ACT_TEMPLATE=[
@@ -477,6 +550,7 @@ const ACT_TEMPLATE=[
   ['Development','Deploy to production',0],
   ['Marketing','Publish the announcement',0],
   ['Release management','Post-release health check',3]];
+// Date helpers. Dates are stored as 'YYYY-MM-DD' strings and parsed at local midnight.
 const DAY=864e5;
 const today0=(()=>{const t=new Date();t.setHours(0,0,0,0);return t})();
 const isoD=t=>`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -485,9 +559,11 @@ const addDays=(s,n)=>{const t=parseD(s);t.setDate(t.getDate()+n);return isoD(t)}
 const daysBetween=(a,b)=>Math.round((b-a)/DAY);
 const quarterOf=t=>({y:t.getFullYear(),q:Math.floor(t.getMonth()/3)+1});
 const nextQuarter=({y,q})=>q===4?{y:y+1,q:1}:{y,q:q+1};
+// Default release date for a quarter: two weeks before the quarter ends.
 const quarterTarget=(y,q)=>{const end=new Date(y,q*3,0);end.setDate(end.getDate()-14);return isoD(end)};
 const quarterName=(y,q)=>`Q${q} ${y} release`;
 function makeActs(){return ACT_TEMPLATE.map(([team,name,off],i)=>({id:i+1,team,name,off,status:'todo',owner:TEAM_OWNER[team]||'',link:''}))}
+// Two sample releases (this quarter and next). Activity statuses are faked from how close their due dates are.
 function seedReleases(){
   const q0=quarterOf(new Date()), q1=nextQuarter(q0);
   const r1={id:1,name:quarterName(q0.y,q0.q),date:quarterTarget(q0.y,q0.q),status:'locked',theme:'Self-serve billing and enterprise sign-in.',activities:makeActs(),updates:[]};
@@ -499,6 +575,9 @@ function seedReleases(){
   return [r1,r2];
 }
 
+// S is the whole app state, saved as one JSON blob under KEY in localStorage.
+// Older saves are upgraded here: dependencies normalized, releases added if missing.
+// role (who is viewing) is saved separately so a reset keeps it.
 // ---------- state ----------
 const KEY='roadmap-prototype-v3';
 let S; try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
@@ -510,16 +589,21 @@ if(!ROLES.find(r=>r.id===role))role='product';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const R=()=>ROLES.find(r=>r.id===role);
 const canEdit=()=>R().edit;
+// openId is the project shown in the drawer (null = closed).
 const byId=id=>S.projects.find(p=>p.id===id);
 let openId=null;
 
+// Formatting and small shared pieces of HTML.
 // ---------- helpers ----------
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const NONE='<span class="muted">Not set</span>';
 const money=n=>n?'$'+n.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2}):NONE;
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// Week numbers used everywhere in the forecast are offsets from this week's Monday:
+// week 0 = this week, week 4 = four weeks out. wkDate(w) turns one back into a date.
 const monday=(()=>{const t=new Date();t.setHours(0,0,0,0);const dd=(t.getDay()+6)%7;t.setDate(t.getDate()-dd);return t})();
 const wkDate=w=>{const t=new Date(monday);t.setDate(t.getDate()+7*w);return t};
+// Dates display as 10-Nov-2026 (with non-breaking hyphens so they never wrap).
 const fmt=t=>`${String(t.getDate()).padStart(2,'0')}\u2011${MON[t.getMonth()]}\u2011${t.getFullYear()}`;
 const fmtW=w=>fmt(wkDate(w));
 const fmtD=s=>fmt(new Date(s+'T00:00:00'));
@@ -528,7 +612,9 @@ const wk=n=>n?`${+n} wk`:NONE;
 const isOpen=p=>!DONE.has(p.stage);
 const committedList=()=>S.projects.filter(p=>isOpen(p)&&p.committed);
 const laterList=()=>S.projects.filter(p=>isOpen(p)&&!p.committed);
+// Open projects in backlog rank order: committed first, then everything else.
 const ranked=()=>[...committedList(),...laterList()];
+// Coloured tag for budget health, based on spent vs budget.
 function budgetPill(p){
   if(!p.budget)return '<span class="pill n">No budget</span>';
   if(!p.spent)return '<span class="pill n">No spend yet</span>';
@@ -538,6 +624,7 @@ function budgetPill(p){
   return `<span class="pill ok">${pct}% used</span>`;
 }
 function spendLine(p){if(!p.spent)return '';return p.budget?`${+p.spent||0} of ${+p.budget} wk spent`:(p.spent?`${+p.spent} wk spent`:'')}
+// Deliverable state for display: done, na, prog, none, or late (not done and the project has reached the deliverable's lateAt stage).
 function delState(p,dl){
   const st=p.deliverables[dl.id].status;
   if(st==='done')return 'done'; if(st==='na')return 'na';
@@ -547,6 +634,7 @@ function delState(p,dl){
 }
 function delDots(p){return `<span class="dots" title="Deliverables">${DELIVS.map(dl=>`<i class="${delState(p,dl)}" title="${dl.name}: ${DSTATUS.find(s=>s[0]===p.deliverables[dl.id].status)[1]}"></i>`).join('')}</span>`}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3200)}
+// Used to hide projects from the dependency picker that would create a loop.
 function wouldCycle(pid,depId){ // does depId (transitively) depend on pid?
   const seen=new Set();const st=[depId];
   while(st.length){const x=st.pop();if(x===pid)return true;if(seen.has(x))continue;seen.add(x);const q=byId(x);if(q)st.push(...q.deps.map(d=>d.id))}
@@ -560,16 +648,21 @@ function wouldCycle(pid,depId){ // does depId (transitively) depend on pid?
 // (development done plus the UAT and release weeks set on the Capacity page).
 // Start-type dependencies hold a project back from taking capacity; finish-type dependencies
 // hold back its release. A project never takes more developers than its max team size.
+// UATW = weeks of UAT and release after development. relW(f) = the week a project is released.
 const UATW=()=>Math.max(0,+S.capacity.uatWeeks||0);
 const relW=f=>f.finish+1+UATW();
 function reachedOn(q,stage){ // date a project first reached a stage it has already passed, from its history
   const h=(q.history||[]).filter(x=>SI(x.to)>=SI(stage)).map(x=>x.date).sort()[0];return h?new Date(h+'T00:00:00'):null}
+// -Infinity means the dependency is already satisfied; null means it can't be
+// known yet (the other project isn't scheduled). Lag is converted to whole weeks.
 function depWeek(F,d){ // week a dependency is met, including any lag in days
   const m=msWeek(F,d.id,d.on),lag=Math.max(0,+d.lag||0);
   if(!lag||m===null)return m;
   if(m===-Infinity){const q=byId(d.id),t=q&&reachedOn(q,d.on);if(!t)return -Infinity;t.setDate(t.getDate()+lag);const w=Math.ceil((t-monday)/(7*864e5));return w<=0?-Infinity:w}
   return m+Math.ceil(lag/7);
 }
+// Stages up to In Development are reached at the project's forecast start week;
+// UAT the week after development ends; Released/Review after the UAT weeks too.
 function msWeek(F,qid,stage){ // week project qid reaches stage: -Infinity if already there, null if not yet known
   const q=byId(qid); if(!q||SI(q.stage)>=SI(stage))return -Infinity;
   const f=F[qid]; if(!f)return -Infinity;
@@ -577,13 +670,27 @@ function msWeek(F,qid,stage){ // week project qid reaches stage: -Infinity if al
   if(f.finish==null)return null;
   return stage==='uat'?f.finish+1:f.finish+1+UATW();
 }
+// Returns { F, used, cap }:
+//   F[id] = { rem: dev-weeks left, start: week it enters development, done: week
+//             development ends, finish: week development is counted as finished
+//             (may be later than done if a finish-type dependency holds it),
+//             inflight, unsched, noSize, noEst, fromBudget, waitingOn, heldBy }
+//   used[w] = dev-weeks used in week w, cap = dev-weeks available per week.
+// Size = estimate, or the budget when there's no estimate. In-flight work only
+// needs the part not yet done (size x (1 - progress)). Release week = relW(f).
+// Simulates up to 260 weeks (5 years); anything not placed by then is unscheduled.
+// It's cheap, so every view simply calls forecast() again when it renders.
 function forecast(){
   const cap=S.capacity.devs*S.capacity.roadmapPct/100;
   const rk=ranked();
+  // Priority order: in-flight work first, then the backlog in rank order.
   const order=[...rk.filter(p=>ACTIVE.has(p.stage)),...rk.filter(p=>!ACTIVE.has(p.stage))];
   const F={}; const used=[];
   for(const p of order){const size=+p.estimate||+p.budget||0;F[p.id]={rem:Math.max(0,size*(1-(ACTIVE.has(p.stage)?p.progress:0)/100)),start:ACTIVE.has(p.stage)?0:null,done:null,finish:null,noEst:!p.estimate,fromBudget:!p.estimate&&!!p.budget,noSize:!size&&!ACTIVE.has(p.stage)}}
   const H=260;
+  // Each week: hand out capacity down the priority list. A project that hasn't
+  // started waits until all its start-type dependencies are met. It takes at most
+  // maxDevs (and no more than it has left).
   for(let w=0;w<H;w++){
     let left=cap;
     for(const p of order){
@@ -595,6 +702,9 @@ function forecast(){
       f.start??=w; f.rem-=a; left-=a;
       if(f.rem<=1e-9)f.done=w;
     }
+    // Then mark projects whose development is done as finished, unless a finish-type
+    // dependency isn't met yet. Repeat until nothing changes, because one project
+    // finishing can release another's finish dependency in the same week.
     for(let changed=true;changed;){changed=false;
       for(const p of order){const f=F[p.id];
         if(f.done===null||f.finish!==null)continue;
@@ -614,6 +724,9 @@ function forecast(){
   return {F,used,cap};
 }
 
+// setStage() is the only way a project changes stage. It records history, moves a
+// project that starts development into Committed, and creates an alert for every
+// role subscribed to the new stage. (The full app would email or Slack them.)
 // ---------- alerts ----------
 function setStage(p,to){
   if(!canEdit()||p.stage===to)return;
@@ -628,6 +741,8 @@ function setStage(p,to){
   render();
 }
 
+// Each v*() function returns the HTML for one screen. They read S and the forecast
+// and never change state; changes happen in the event handlers further down.
 // ---------- views ----------
 function viewHead(title,desc,actions=''){
   return `<div class="viewhead"><div><h1>${title}</h1>${desc?`<p>${desc}</p>`:''}</div><div>${actions}</div></div>`;
@@ -635,6 +750,11 @@ function viewHead(title,desc,actions=''){
 function roleNote(){return `<div class="rolenote"><b>${esc(R().name)}</b><span>${R().note}</span></div>`}
 function plink(p){return `<a href="#project-${p.id}" data-open="${p.id}">${esc(p.name)}</a>`}
 
+// Home: stage pipeline counts, then panels that depend on the role. Editors get
+// 'Needs attention' (late deliverables, missing estimates, budget problems,
+// unschedulable work); C-Suite gets budget totals and at-risk work; Marketing and
+// Support get upcoming launches with their deliverable status. Everyone gets
+// Next to ship, Next release and Your alerts.
 function vHome(){
   const {F}=forecast();
   const open=S.projects.filter(p=>!DONE.has(p.stage));
@@ -667,6 +787,7 @@ function vHome(){
     const title=role==='marketing'?'Upcoming launches':'Get ready for';
     rolePanel=`<section class="panel"><header><h2>${title}</h2><span class="label">${dl.name}</span></header><div class="body">${list.length?`<ul class="list">${list.map(p=>{const x=p.deliverables[key];const st=delState(p,dl);return `<li><div class="t">${plink(p)}<div>Ships around ${F[p.id].finish!==null?fmtW(relW(F[p.id])):'TBD'}${x.link?` · <a href="${esc(x.link)}" target="_blank" rel="noopener">Open doc</a>`:''}</div></div><div class="r"><span class="pill ${st==='done'?'ok':st==='late'?'bad':st==='prog'?'warn':'n'}">${DSTATUS.find(s=>s[0]===x.status)[1]}</span></div></li>`}).join('')}</ul>`:'<p class="empty">Nothing coming up yet.</p>'}</div></section>`;
   }
+  // Next release that hasn't shipped, and (for viewer teams) that team's activities in it.
   const nextRel=[...S.releases].filter(r=>r.status!=='released').sort((a,b)=>a.date.localeCompare(b.date))[0];
   let relPanel='';
   if(nextRel){const st=relStats(nextRel,F);const team=ROLE_TEAM[role];const acts=team?nextRel.activities.filter(a=>a.team===team).sort((a,b)=>a.off-b.off):[];
@@ -681,13 +802,20 @@ function vHome(){
   return viewHead('Roadmap at a glance',`${open.length} open projects. Forecasts assume ${(S.capacity.devs*S.capacity.roadmapPct/100).toFixed(1)} dev-weeks of roadmap capacity per week.`)+roleNote()+pipeline+
     `<div class="grid2">${rolePanel}<section class="panel"><header><h2>Next to ship</h2><a href="#timeline">Timeline</a></header><div class="body">${shipList}</div></section>${relPanel}${alertsPanel}</div>`;
 }
+// One alert as a list item. Release alerts (kind:'release') link to the release; stage alerts link to the project.
 function alertLi(a){if(a.kind==='release'){const r=relById(a.rid);if(!r)return '';return `<li><div class="t"><a href="#release-${r.id}">${esc(r.name)}</a><div>${esc(a.msg)}${a.by?` · from ${esc(a.by)}`:''}</div></div><div class="r when">${fmtD(a.date)}</div></li>`}const p=byId(a.pid);if(!p)return '';return `<li><div class="t">${plink(p)}<div>Entered ${stageChip(a.stage)}${a.by?` · moved by ${esc(a.by)}`:''}</div></div><div class="r when">${fmtD(a.date)}</div></li>`}
 
+// Backlog: one table with three sections (Committed, Everything else, Shipped).
+// Columns: rank, project, stage, budget, estimate, budget health, dependencies,
+// forecast start, forecast release, release, deliverables. Rows are draggable to
+// re-rank only when you can edit and no filters are on (ranking a filtered list
+// would be ambiguous). Ticking rows shows a bar to add them to a release.
 function vBacklog(){
   const {F}=forecast(); const ed=canEdit();
   const com=committedList(), later=laterList(), shipped=S.projects.filter(p=>DONE.has(p.stage));
   const canDrag=ed&&!bfActive();
   const grip=p=>`<button class="grip" data-grip="${p.id}" aria-label="Re-rank ${esc(p.name)}: drag, or press the up and down arrow keys" title="Drag to re-rank"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/></svg></button>`;
+  // One backlog row. Returns '' when filters hide it. offset continues the rank numbers into the second section.
   const row=(p,i,sec,n,offset)=>{const f=F[p.id]||{};const open=sec!=='shipped';
     const start=!open?'<span class="muted">Done</span>':f.inflight?'<span class="muted">In flight</span>':f.noSize?'<span class="pill warn">Needs an estimate</span>':f.unsched?'<span class="pill bad">Blocked</span>':fmtW(f.start);
     const fin=!open?fmtD(([...p.history].reverse().find(h=>h.to==='released')||{}).date||new Date().toISOString().slice(0,10)):f.finish!=null?fmtW(relW(f)):NONE;
@@ -704,6 +832,7 @@ function vBacklog(){
     <td>${rr?`<a class="chip" draggable="false" href="#release-${rr.id}">${esc(rr.name)}</a><div class="sub num">${fmtD(rr.date)}</div>${rk&&rk.k==='risk'?`<span class="pill bad">Ready ${-rk.days} days late</span>`:''}`:'<span class="muted">None</span>'}</td>
     <td>${delDots(p)}</td></tr>`};
   const head=(t,d,n,key)=>`<tr class="section" data-secdrop="${key}"><td colspan="11"><b>${t}</b> <span class="muted">· ${n} ${n===1?'project':'projects'}${d?' · '+d:''}</span></td></tr>`;
+  // A section header row plus its rows; the header is also a drop target for moving between sections.
   const sect=(key,t,d,list,offset,emptyMsg)=>{if(BF.sec!=='all'&&BF.sec!==key)return '';const rows=list.map((p,i)=>row(p,i,key,list.length,offset));const shown=rows.filter(Boolean).length;
     if(bfActive()&&!shown)return '';return head(t,d,bfActive()?shown:list.length,key)+(rows.join('')||`<tr><td colspan="11" class="muted">${emptyMsg}</td></tr>`)};
   const total=S.projects.length;
@@ -731,12 +860,18 @@ function vBacklog(){
   <div class="legend"><span>Budget and estimate are in developer weeks. Budget health compares actual spend to budget.</span><span>Deliverables, in order: ${DELIVS.map(x=>x.name).join(', ')}.</span><span><span class="dots"><i class="done"></i></span> Done</span><span><span class="dots"><i class="prog"></i></span> In progress</span><span><span class="dots"><i class="late"></i></span> Overdue for this stage</span></div>`;
 }
 
+// Stages: a kanban column per stage. Cards can be dragged to another column (editors), which calls setStage().
 function vBoard(){
   const {F}=forecast(); const ed=canEdit();
   return viewHead('Stages',ed?'Drag a card to another column to move its stage. Subscribers get an alert.':'Where every project sits today.')+
   `<div class="board">${STAGES.map(s=>{const ps=S.projects.filter(p=>p.stage===s.id);return `<div class="col" data-col="${s.id}" style="--sc:var(--s-${s.id})"><h3>${s.name}<span>${ps.length}</span></h3>${ps.map(p=>{const f=F[p.id];return `<div class="card" data-open="${p.id}" ${ed?`draggable="true" data-drag="${p.id}"`:''} tabindex="0"><div class="t">${esc(p.name)}</div><div class="m"><span>${esc(p.owner)}</span>${delDots(p)}</div><div class="m"><span class="num">${p.estimate?+p.estimate+' wk est':'No estimate'} · ${p.budget?+p.budget+' wk budget':'no budget'}</span><span class="num">${f&&f.finish!=null?'Ships '+fmtW(relW(f)):''}</span></div></div>`}).join('')}</div>`}).join('')}</div>`;
 }
 
+// Timeline: a Gantt chart built from absolutely positioned divs, one row per
+// project, one 24px column per week. P weeks of past are shown (enough to reach the
+// earliest in-flight or shipped start) and N weeks of future. Dependency arrows are
+// an SVG overlay; release dates and this week are vertical lines. Shipped work uses
+// real dates from history, open work uses the forecast.
 function vTimeline(){
   const {F}=forecast();
   const open=ranked();
@@ -747,6 +882,7 @@ function vTimeline(){
   const P=Math.min(78,Math.max(26,-firstPast+4));
   const max=Math.max(0,...open.map(p=>F[p.id].finish??0));
   const N=Math.min(156,Math.max(52,max+8)); const W=24; const RH=40; const HH=48; const TW=(P+N)*W;
+  // X(w): pixel position of week w (week 0 = this week).
   const X=w=>(w+P)*W;
   let months='',grid='';
   for(let w=-P;w<N;w++){const t=wkDate(w);const prev=wkDate(w-1);
@@ -757,6 +893,7 @@ function vTimeline(){
   const rowsList=[...open,...shipped];
   const idx={};rowsList.forEach((p,i)=>idx[p.id]=i);
   const s0=p=>{const f=F[p.id];return f&&f.inflight?Math.min(0,devStart(p)??0):f?f.start:null};
+  // Dependency arrows: from the week the dependency is met on the other project's row to this project's start (or release).
   let links='';
   open.forEach((p,i)=>{const f=F[p.id];if(f.start==null)return;
     p.deps.forEach(d=>{if(idx[d.id]==null)return;const m=depWeek(F,d);if(m===null||m===-Infinity||f.finish==null)return;
@@ -779,19 +916,23 @@ function vTimeline(){
    <div class="tl-today" style="left:calc(var(--namew) + ${X(0)}px);top:0;height:${H}px" title="This week"></div></div></div>
    <div class="legend">${STAGES.filter(s=>!DONE.has(s.id)).map(s=>`<span>${stageChip(s.id)}</span>`).join('')}<span><span style="display:inline-block;width:2px;height:12px;background:var(--bad);vertical-align:middle"></span> This week</span></div>`;
 }
+// Scroll the timeline so this week is in view.
 function tlToday(smooth){const el=document.getElementById('tl');const t=el&&el.querySelector('.tl-today');if(!t)return;const nw=parseFloat(getComputedStyle(el).getPropertyValue('--namew'))||224;el.scrollTo({left:Math.max(0,t.offsetLeft-nw-240),behavior:smooth?'smooth':'auto'})}
+// Shared hover tooltip, used by the release runway dots (data-tip-t / data-tip-d attributes).
 function showTip(el){const t=document.getElementById('tip');t.innerHTML=`<b>${el.dataset.tipT}</b><span>${el.dataset.tipD}</span><span>Responsible: ${el.dataset.tipO}</span><span class="m">${el.dataset.tipS}</span>`;t.hidden=false;
   const r=el.getBoundingClientRect(),w=t.offsetWidth,h=t.offsetHeight;let x=r.left+r.width/2-w/2;x=Math.max(8,Math.min(innerWidth-w-8,x));let y=r.top-h-8;if(y<8)y=r.bottom+8;t.style.left=x+'px';t.style.top=y+'px'}
 function hideTip(){const t=document.getElementById('tip');if(t)t.hidden=true}
 document.addEventListener('mouseover',e=>{const d=e.target.closest?.('[data-tip-t]');d?showTip(d):hideTip()});
 document.addEventListener('focusin',e=>{const d=e.target.closest?.('[data-tip-t]');d?showTip(d):hideTip()});
 document.addEventListener('scroll',hideTip,true);
+// Middle-mouse drag to pan the timeline sideways (and the page vertically).
 let tlPan=null;
 document.addEventListener('mousedown',e=>{const el=e.target.closest?.('#tl');if(!el||e.button!==1)return;e.preventDefault();tlPan={el,x:e.clientX,y:e.clientY,sl:el.scrollLeft,sy:window.scrollY};el.classList.add('panning')});
 document.addEventListener('mousemove',e=>{if(!tlPan)return;tlPan.el.scrollLeft=tlPan.sl-(e.clientX-tlPan.x);window.scrollTo(window.scrollX,tlPan.sy-(e.clientY-tlPan.y))});
 document.addEventListener('mouseup',e=>{if(!tlPan)return;tlPan.el.classList.remove('panning');tlPan=null});
 document.addEventListener('auxclick',e=>{if(e.button===1&&e.target.closest?.('#tl'))e.preventDefault()});
 
+// Capacity: the three inputs that drive the forecast, and a bar per week showing how much capacity the forecast uses.
 function vCapacity(){
   const {F,used,cap}=forecast(); const ed=canEdit(); const c=S.capacity;
   const N=Math.min(used.length,78);
@@ -814,6 +955,7 @@ function vCapacity(){
   </div></section></div>`;
 }
 
+// Alerts: a role x stage matrix of subscriptions (editors can change any row, others only their own) and the alert history.
 function vAlerts(){
   const ed=canEdit();
   const matrix=`<div class="tablewrap matrix"><table><thead><tr><th>Who</th>${STAGES.map(s=>`<th>${stageChip(s.id)}</th>`).join('')}</tr></thead><tbody>${ROLES.map(r=>`<tr class="${r.id===role?'me':''}"><td><b>${esc(r.name)}</b></td>${STAGES.map(s=>{const on=(S.subs[r.id]||[]).includes(s.id);const can=ed||r.id===role;return `<td><input type="checkbox" aria-label="${esc(r.name)} alerted at ${s.name}" data-sub="${r.id}" data-stage="${s.id}" ${on?'checked':''} ${can?'':'disabled'}></td>`}).join('')}</tr>`).join('')}</tbody></table></div>`;
@@ -822,6 +964,8 @@ function vAlerts(){
   <div class="grid2"><section class="panel"><header><h2>Alert history</h2></header><div class="body"><ul class="list feed">${S.alerts.slice(0,20).map(a=>{const li=alertLi(a);return li.replace('</div></div>',` · to ${a.roles.length?a.roles.map(r=>esc(ROLES.find(x=>x.id===r).name.replace(' (you)',''))).join(', '):'nobody'}</div></div>`)}).join('')}</ul></div></section></div>`;
 }
 
+// A project is 'at risk' in a release when its forecast release week falls after
+// the release date; 'tight' when it's ready less than 7 days before.
 // ---------- releases: helpers that need the forecast ----------
 const relById=id=>(S.releases||[]).find(r=>r.id===id);
 const relProjects=r=>S.projects.filter(p=>p.releaseId===r.id);
@@ -842,6 +986,7 @@ function riskPill(x){
   if(x.k==='tight')return `<span class="pill warn">Ready ${x.days} days before</span>`;
   return `<span class="pill ok">Ready ${x.days} days early</span>`;
 }
+// Counts for a release card or page: projects, on time / at risk, activities done, overdue, blocked.
 function relStats(r,F){
   const ps=relProjects(r);const risks=ps.map(p=>projRisk(r,p,F));
   const acts=r.activities;const done=acts.filter(a=>a.status==='done').length;
@@ -856,11 +1001,14 @@ function newRelease(name,date){
   S.releases.push(r);return r;
 }
 function addToRelease(ids,rid){ids.forEach(id=>{const p=byId(id);if(p&&!DONE.has(p.stage))p.releaseId=rid})}
+// Post a release update: adds it to the release's updates and to everyone's alert feed.
 function relAlert(r,msg,roles){
   roles=roles||['exec','marketing','support','cs','dev','product'];
   S.alerts.unshift({kind:'release',date:isoD(today0),rid:r.id,msg,roles,by:R().name});
   r.updates.unshift({date:isoD(today0),by:R().name,msg});
 }
+// Suggest releases: group projects not in a release by the quarter their forecast
+// says they'll be ready, and match each group to an existing release that quarter.
 function suggestBundles(F){
   const loose=ranked().filter(p=>!p.releaseId&&F[p.id]&&F[p.id].finish!=null);
   const groups={};
@@ -872,6 +1020,7 @@ function suggestBundles(F){
 }
 
 // ---------- releases: list view ----------
+// Releases list: a card per release, projects not in a release yet, and suggested bundles.
 function vReleases(){
   const {F}=forecast(); const ed=canEdit();
   const rs=[...S.releases].sort((a,b)=>a.date.localeCompare(b.date));
@@ -895,7 +1044,12 @@ function vReleases(){
 }
 
 // ---------- releases: one release ----------
+// relId is the release shown at #release-<id>. confirmRelDel makes Delete a two-click action.
 let relId=null, confirmRelDel=false;
+// One release: editable header (name, theme, date, status), KPI strip, its projects
+// with readiness against the date, the runway swimlane (every activity placed by its
+// due offset), a card per team with editable activities (the viewer's own team is
+// first), and team updates.
 function vRelease(){
   const r=relById(relId); if(!r)return viewHead('Release not found','It may have been deleted.')+'<p><a href="#releases">Back to releases</a></p>';
   const {F}=forecast(); const ed=canEdit(); const st=relStats(r,F); const myTeam=ROLE_TEAM[role];
@@ -949,6 +1103,9 @@ function vRelease(){
    (ed?`<div style="margin-top:24px"><button class="btn danger" data-act="reldel">${confirmRelDel?'Delete this release? Its projects stay in the backlog. Click again to confirm':'Delete release'}</button></div>`:'');
 }
 
+// The right-hand project panel. Editors see inputs; viewers see plain values.
+// Inputs carry data-f (project field), data-dep (dependency form), data-dl
+// (deliverable) attributes that the change handler below reads.
 // ---------- project drawer ----------
 function drawer(){
   const dr=document.getElementById('drawer'),sc=document.getElementById('scrim');
@@ -957,6 +1114,7 @@ function drawer(){
   const ed=canEdit(); const {F}=forecast(); const f=F[p.id]||{};
   const dis=ed?'':'disabled';
   const others=S.projects.filter(q=>q.id!==p.id&&!wouldCycle(p.id,q.id));
+  // Projects that depend on this one, so the drawer can list what it unblocks.
   const unblocks=S.projects.flatMap(q=>q.deps.map((d,i)=>[q,d,i]).filter(([,d])=>d.id===p.id));
   if(depDraft.pid!==p.id)depDraft={pid:p.id,id:'',then:'start',on:'released',lag:0};
   const draft={id:+depDraft.id,on:depDraft.on,then:depDraft.then,lag:Math.max(0,Math.round(+depDraft.lag||0))};
@@ -1003,8 +1161,11 @@ function drawer(){
     </div>`;
   dr.hidden=false;sc.hidden=false;
 }
+// Project id awaiting a second click on Delete.
 let confirmDel=null;
 
+// The URL hash is the router: #backlog, #timeline, #release-2, #project-5, etc.
+// A project hash opens the drawer over whatever view is showing.
 // ---------- render & routing ----------
 let view='home';
 function route(){
@@ -1015,6 +1176,8 @@ function route(){
   else{openId=null;if(VIEWS.some(v=>v[0]===h))view=h}
   render();
 }
+// Redraw nav, role picker, the current view and the drawer. The timeline keeps its
+// horizontal scroll position across re-renders. Some views use the full window width.
 function render(){
   document.getElementById('nav').innerHTML=VIEWS.map(([id,n])=>`<a href="#${id}" ${id===view||(view==='release'&&id==='releases')?'aria-current="page"':''}>${n}</a>`).join('');
   const sel=document.getElementById('role');
@@ -1027,12 +1190,16 @@ function render(){
 const curHash=()=>view==='release'?'release-'+relId:view;
 function closeDrawer(){openId=null;confirmDel=null;history.replaceState(null,'','#'+curHash());drawer()}
 
+// All clicks go through this one listener, which checks data-* attributes on the
+// target from most to least specific: open a project, change stage, remove a
+// dependency, release actions, bulk actions, filters, add/delete/reset.
 // ---------- events ----------
 document.addEventListener('click',e=>{
   const t=e.target;
   const op=t.closest('[data-open]');
   if(op&&!t.closest('button')){e.preventDefault();openId=+op.dataset.open;confirmDel=null;history.replaceState(null,'','#project-'+openId);drawer();document.getElementById('drawer').scrollTop=0;return}
   const mv=t.closest('[data-move]');
+  // Dead code: the old up/down rank buttons. Disabled with '&& false'; ranking is now drag and drop or arrow keys.
   if(mv&&canEdit()&&false){const id=+mv.dataset.move,dir=+mv.dataset.dir;const L=ranked();const i=L.findIndex(p=>p.id===id);const p=L[i];const j=i+dir;
     const q=L[j];
     if(q&&q.committed===p.committed){[L[i],L[j]]=[L[j],L[i]]}
@@ -1063,6 +1230,8 @@ document.addEventListener('click',e=>{
   if(act==='reset'){S=seed();save();openId=null;render();toast('Sample data restored.');return}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openId)closeDrawer();if(e.key==='Enter'&&e.target.matches('.card[data-open]'))e.target.click()});
+// All form changes go through this one listener. Text and number inputs save on
+// change (blur or Enter), then re-render and put focus back on the same input.
 document.addEventListener('change',e=>{
   if(e.target.dataset?.bstage){const q=byId(+e.target.dataset.bstage);if(q)setStage(q,e.target.value);return}
   const t=e.target;
@@ -1085,6 +1254,7 @@ document.addEventListener('change',e=>{
     if(k==='date'&&old!==t.value)relAlert(r,`Release date moved to ${fmtD(t.value)}.`);
     save();render();document.getElementById(t.id)?.focus();return}
   const p=openId&&byId(openId);
+  // Moving between sections puts the project at the end of Committed or the top of Everything else.
   if(t.dataset.f==='committed'&&p){p.committed=t.value==='1';S.projects.splice(S.projects.indexOf(p),1);p.committed?S.projects.push(p):S.projects.unshift(p);S.projects=[...committedList(),...laterList(),...S.projects.filter(x=>DONE.has(x.stage))];save();render();return}
   if(t.dataset.f&&p){const k=t.dataset.f;let v=t.value;if(t.type==='number'){v=Math.max(0,+v||0);if(k==='progress')v=Math.min(100,v);if(k==='maxDevs')v=Math.max(1,v);if(k==='spent'||k==='budget'||k==='estimate')v=Math.round(v*2)/2}p[k]=v;save();render();return}
   if(t.dataset.dep&&p){const k=t.dataset.dep;if(k==='type'){const dt=DEP_TYPES.find(x=>x.id===t.value);if(dt&&dt.on){depDraft.on=dt.on;depDraft.then=dt.then}else if(dt){depDraft.on='uat'}}else depDraft[k]=t.value;drawer();document.getElementById(t.id)?.focus();return}
@@ -1092,6 +1262,9 @@ document.addEventListener('change',e=>{
   if(t.dataset.cap){let v=Math.max(0,+t.value||0);if(t.dataset.cap==='roadmapPct')v=Math.min(100,v);S.capacity[t.dataset.cap]=v;save();render();setTimeout(()=>document.getElementById(t.id)?.focus(),0);return}
   if(t.dataset.sub){const r=t.dataset.sub;if(!(canEdit()||r===role))return;const set=new Set(S.subs[r]||[]);t.checked?set.add(t.dataset.stage):set.delete(t.dataset.stage);S.subs[r]=[...set];save();toast('Alert preferences saved.');return}
 });
+// placeProject() moves project id before or after targetId (or to the start of a
+// section) and rewrites S.projects in rank order. In-flight work can't leave Committed.
+// moveBy() is the keyboard version (arrow keys on the grip button).
 // drag and drop ranking in the backlog
 function placeProject(id,targetId,after,secKey){
   const p=byId(id); if(!p||DONE.has(p.stage))return;
@@ -1130,6 +1303,7 @@ document.addEventListener('dragstart',e=>{const c=e.target.closest?.('[data-drag
 document.addEventListener('dragover',e=>{const col=e.target.closest?.('[data-col]');if(col&&canEdit()){e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x!==col&&x.classList.remove('over'));col.classList.add('over')}});
 document.addEventListener('dragleave',e=>{const col=e.target.closest?.('[data-col]');if(col&&!col.contains(e.relatedTarget))col.classList.remove('over')});
 document.addEventListener('drop',e=>{const col=e.target.closest?.('[data-col]');if(!col||dragRow!=null)return;e.preventDefault();col.classList.remove('over');const p=byId(+e.dataTransfer.getData('text/plain'));if(p)setStage(p,col.dataset.col)});
+// Start-up: route on hash changes, land on the role's home view, then draw.
 window.addEventListener('hashchange',route);
 if(!location.hash)view=R().home;
 route();
