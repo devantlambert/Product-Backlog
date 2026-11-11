@@ -118,7 +118,7 @@ thead th{border-top:0;font-size:12px;line-height:16px;color:var(--muted);font-we
 tbody tr:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
 td.rank{width:64px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 td .name{font-weight:600;color:var(--fg);text-decoration:none}
-#main.wide{max-width:none}
+body.wide .wrap{max-width:none}
 .bltable{min-width:1100px}.bltable th,.bltable td{padding:8px 6px}.bltable .chip{white-space:normal}.bltable .stagesel{max-width:136px}
 .bltable td:nth-child(2){min-width:170px}.bltable td:nth-child(7){min-width:130px}
 .tablewrap td:nth-child(2){min-width:200px}
@@ -1020,7 +1020,7 @@ function render(){
   const sel=document.getElementById('role');
   sel.innerHTML=ROLES.map(r=>`<option value="${r.id}" ${r.id===role?'selected':''}>${r.name}${r.edit?'':' (view only)'}</option>`).join('');
   const fn={home:vHome,backlog:vBacklog,board:vBoard,timeline:vTimeline,releases:vReleases,release:vRelease,capacity:vCapacity,alerts:vAlerts}[view];
-  const mainEl=document.getElementById('main');mainEl.classList.toggle("wide",view==="backlog"||view==="board"||view==="timeline");const oldTl=document.getElementById('tl');const keepX=oldTl&&view==='timeline'?oldTl.scrollLeft:null;mainEl.innerHTML=fn();
+  const mainEl=document.getElementById('main');document.body.classList.toggle("wide",view==="backlog"||view==="board"||view==="timeline");const oldTl=document.getElementById('tl');const keepX=oldTl&&view==='timeline'?oldTl.scrollLeft:null;mainEl.innerHTML=fn();
   if(view==='timeline'){if(keepX!=null)document.getElementById('tl').scrollLeft=keepX;else tlToday()}
   drawer();
 }
