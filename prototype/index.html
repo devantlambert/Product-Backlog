@@ -152,7 +152,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 
 /* timeline */
 .tl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-.tl-inner{position:relative}
+.tl-inner{position:relative;width:max-content;min-width:100%}
 .tl-row{display:flex;height:40px;border-top:1px solid var(--line)}
 .tl-row.head{height:48px;border-top:0;background:var(--sunk)}
 .tl-name{position:sticky;left:0;z-index:3;flex:none;width:var(--namew);background:var(--surface);border-right:1px solid var(--line);padding:0 12px;display:flex;align-items:center;gap:8px;font-size:14px;overflow:hidden;white-space:nowrap}
@@ -743,7 +743,7 @@ function vTimeline(){
   const firstPast=Math.min(0,...open.filter(p=>F[p.id].inflight).map(p=>devStart(p)??0),...shipped.map(p=>devStart(p)??wkOf(reachedOn(p,'released'))??0));
   const P=Math.min(78,Math.max(26,-firstPast+4));
   const max=Math.max(0,...open.map(p=>F[p.id].finish??0));
-  const N=Math.min(156,Math.max(52,max+8)); const W=24; const RH=38; const HH=44; const TW=(P+N)*W;
+  const N=Math.min(156,Math.max(52,max+8)); const W=24; const RH=40; const HH=48; const TW=(P+N)*W;
   const X=w=>(w+P)*W;
   let months='',grid='';
   for(let w=-P;w<N;w++){const t=wkDate(w);const prev=wkDate(w-1);
@@ -767,7 +767,7 @@ function vTimeline(){
   const done=shipped.map(p=>{const a=devStart(p),r=wkOf(reachedOn(p,'released'));
     const bar=a==null||r==null?`<div class="bar-after" style="left:${X(-P)+8}px">No dates recorded</div>`:`<div class="bar done" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${X(a)}px;width:${Math.max(1,r-a)*W-2}px" title="${esc(p.name)}: development ${fmtW(a)}, released ${fmtD(reachedOn(p,'released').toISOString().slice(0,10))}">${(r-a)*W>110?'Shipped':''}</div><div class="bar-after" style="left:${X(r)+6}px">Released ${fmtD(reachedOn(p,'released').toISOString().slice(0,10))}</div>`;
     return `<div class="tl-row shipped"><div class="tl-name"><span class="rk"></span>${plink(p)}</div><div class="tl-track" style="width:${TW+120}px">${grid}${bar}</div></div>`}).join('');
-  const H=HH+rowsList.length*RH+(shipped.length?RH:0);
+  const H=HH+rowsList.length*RH+(shipped.length?28:0);
   return viewHead('Timeline','Solid bars are development, pale bars are UAT and release, and striped bars are already in progress. Shipped work sits at the bottom. Scroll sideways, or hold the middle mouse button and drag, to move back and forward in time.',`<button class="btn sm" data-act="tltoday">Jump to this week</button>`)+
    `<div class="tl" id="tl"><div class="tl-inner"><div class="tl-row head"><div class="tl-name"><span class="label">Project</span></div><div class="tl-track" style="width:${TW+120}px">${months}</div></div>${rows}
    ${shipped.length?`<div class="tl-row sep"><div class="tl-name"><span class="label">Shipped</span></div><div class="tl-track" style="width:${TW+120}px"></div></div>${done}`:''}
@@ -776,7 +776,7 @@ function vTimeline(){
    <div class="tl-today" style="left:calc(var(--namew) + ${X(0)}px);top:0;height:${H}px" title="This week"></div></div></div>
    <div class="legend">${STAGES.filter(s=>!DONE.has(s.id)).map(s=>`<span>${stageChip(s.id)}</span>`).join('')}<span><span style="display:inline-block;width:2px;height:12px;background:var(--bad);vertical-align:middle"></span> This week</span></div>`;
 }
-function tlToday(smooth){const el=document.getElementById('tl');const t=el&&el.querySelector('.tl-today');if(!t)return;const nw=parseFloat(getComputedStyle(el).getPropertyValue('--namew'))||224;el.scrollTo({left:Math.max(0,t.offsetLeft-nw-96),behavior:smooth?'smooth':'auto'})}
+function tlToday(smooth){const el=document.getElementById('tl');const t=el&&el.querySelector('.tl-today');if(!t)return;const nw=parseFloat(getComputedStyle(el).getPropertyValue('--namew'))||224;el.scrollTo({left:Math.max(0,t.offsetLeft-nw-240),behavior:smooth?'smooth':'auto'})}
 let tlPan=null;
 document.addEventListener('mousedown',e=>{const el=e.target.closest?.('#tl');if(!el||e.button!==1)return;e.preventDefault();tlPan={el,x:e.clientX,y:e.clientY,sl:el.scrollLeft,sy:window.scrollY};el.classList.add('panning')});
 document.addEventListener('mousemove',e=>{if(!tlPan)return;tlPan.el.scrollLeft=tlPan.sl-(e.clientX-tlPan.x);window.scrollTo(window.scrollX,tlPan.sy-(e.clientY-tlPan.y))});
