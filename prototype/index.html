@@ -170,6 +170,9 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .bar-after{position:absolute;top:10px;font-size:12px;line-height:20px;color:var(--muted);white-space:nowrap;z-index:2}
 .tl svg.links{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:visible}
 .bar.uat{opacity:.35;z-index:1}
+.bar.done{opacity:.55}
+.tl-row.sep{height:28px;background:var(--sunk)}.tl-row.sep .tl-name{background:var(--sunk)}
+.tl.panning{cursor:grabbing;user-select:none}
 .tl{--namew:224px}
 .legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-top:12px;font-size:12px;line-height:16px;color:var(--muted)}
 
@@ -734,32 +737,51 @@ function vBoard(){
 function vTimeline(){
   const {F}=forecast();
   const open=ranked();
+  const shipped=S.projects.filter(p=>DONE.has(p.stage));
+  const wkOf=d=>d?Math.floor(daysBetween(monday,d)/7):null;
+  const devStart=p=>wkOf(reachedOn(p,'dev'));
+  const firstPast=Math.min(0,...open.filter(p=>F[p.id].inflight).map(p=>devStart(p)??0),...shipped.map(p=>devStart(p)??wkOf(reachedOn(p,'released'))??0));
+  const P=Math.min(78,Math.max(26,-firstPast+4));
   const max=Math.max(0,...open.map(p=>F[p.id].finish??0));
-  const N=Math.min(156,Math.max(26,max+4)); const W=24; const RH=38; const HH=44;
+  const N=Math.min(156,Math.max(52,max+8)); const W=24; const RH=38; const HH=44; const TW=(P+N)*W;
+  const X=w=>(w+P)*W;
   let months='',grid='';
-  for(let w=0;w<N;w++){const t=wkDate(w);const prev=wkDate(w-1);
-    if(w===0||t.getMonth()!==prev.getMonth())months+=`<div class="tl-month" style="left:${w*W}px">${t.toLocaleDateString('en-US',{month:'short'})}${t.getMonth()===0||w===0?' '+t.getFullYear():''}</div>`;
-    if(w%4===0)months+=`<div class="tl-wk" style="left:${w*W+3}px">${t.getDate()}</div>`;
-    if(t.getMonth()!==prev.getMonth())grid+=`<div class="tl-grid" style="left:${w*W}px"></div>`;
+  for(let w=-P;w<N;w++){const t=wkDate(w);const prev=wkDate(w-1);
+    if((w===-P&&wkDate(w+3).getMonth()===t.getMonth())||(w>-P&&t.getMonth()!==prev.getMonth()))months+=`<div class="tl-month" style="left:${X(w)}px">${t.toLocaleDateString('en-US',{month:'short'})}${t.getMonth()===0||w<=-P+3?' '+t.getFullYear():''}</div>`;
+    if((w+P)%4===0)months+=`<div class="tl-wk" style="left:${X(w)+3}px">${t.getDate()}</div>`;
+    if(t.getMonth()!==prev.getMonth())grid+=`<div class="tl-grid" style="left:${X(w)}px"></div>`;
   }
-  const idx={};open.forEach((p,i)=>idx[p.id]=i);
+  const rowsList=[...open,...shipped];
+  const idx={};rowsList.forEach((p,i)=>idx[p.id]=i);
+  const s0=p=>{const f=F[p.id];return f&&f.inflight?Math.min(0,devStart(p)??0):f?f.start:null};
   let links='';
   open.forEach((p,i)=>{const f=F[p.id];if(f.start==null)return;
     p.deps.forEach(d=>{if(idx[d.id]==null)return;const m=depWeek(F,d);if(m===null||m===-Infinity||f.finish==null)return;
-      const x1=m*W, y1=HH+idx[d.id]*RH+RH/2, x2=(d.then==='start'?f.start:relW(f))*W, y2=HH+i*RH+RH/2, mx=d.then==='start'?Math.max(x1+6,x2-6):x2+8;
+      const x1=X(m), y1=HH+idx[d.id]*RH+RH/2, x2=X(d.then==='start'?f.start:relW(f)), y2=HH+i*RH+RH/2, mx=d.then==='start'?Math.max(x1+6,x2-6):x2+8;
       links+=`<path d="M${x1} ${y1} H${mx} V${y2} H${x2}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3"/><circle cx="${x1}" cy="${y1}" r="2" fill="var(--muted)"/><circle cx="${x2}" cy="${y2}" r="3" fill="var(--accent)"/>`;
     })});
-  const rows=open.map((p,i)=>{const f=F[p.id];
-    const bar=f.start==null?`<div class="bar-after" style="left:8px">Can't be scheduled: ${f.noSize?'needs an estimate or a budget':'check its dependencies'}</div>`:
-      `<div class="bar ${f.inflight?'inprog':''}" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${f.start*W}px;width:${Math.max(1,f.finish-f.start+1)*W-2}px" title="${esc(p.name)}: development ${fmtW(f.start)} to ${fmtW(f.finish+1)}">${(f.finish-f.start+1)*W>110?esc(SNAME(p.stage)):''}</div>${relW(f)>f.finish+1?`<div class="bar uat" style="--sc:var(--s-uat);left:${(f.finish+1)*W}px;width:${(relW(f)-f.finish-1)*W-2}px" title="UAT and release"></div>`:''}<div class="bar-after" style="left:${relW(f)*W+6}px">${fmtW(relW(f))}</div>`;
-    return `<div class="tl-row"><div class="tl-name"><span class="rk">${i+1}</span>${plink(p)}</div><div class="tl-track" style="width:${N*W+120}px">${grid}${bar}</div></div>`}).join('');
-  return viewHead('Timeline','Solid bars are development, pale bars are UAT and release, and striped bars are already in progress. Dotted lines run from the point a dependency is met to where the next project can start or finish. Dashed blue lines mark planned releases.')+
-   `<div class="tl"><div class="tl-inner"><div class="tl-row head"><div class="tl-name"><span class="label">Project</span></div><div class="tl-track" style="width:${N*W+120}px">${months}</div></div>${rows}
-   <svg class="links" style="left:var(--namew);width:${N*W}px;height:${HH+open.length*RH}px">${links}</svg>
-   ${S.releases.filter(r=>r.status!=='released').map(r=>{const x=daysBetween(monday,parseD(r.date))/7*W;return x>=0&&x<=N*W?`<div class="tl-rel" style="left:calc(var(--namew) + ${x.toFixed(1)}px);height:${HH+open.length*RH}px"><span>${esc(r.name)}</span></div>`:''}).join('')}
-   <div class="tl-today" style="left:var(--namew);top:0;height:${HH+open.length*RH}px" title="This week"></div></div></div>
+  const rows=open.map((p,i)=>{const f=F[p.id];const st=s0(p);
+    const bar=f.start==null?`<div class="bar-after" style="left:${X(0)+8}px">Can't be scheduled: ${f.noSize?'needs an estimate or a budget':'check its dependencies'}</div>`:
+      `<div class="bar ${f.inflight?'inprog':''}" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${X(st)}px;width:${Math.max(1,f.finish-st+1)*W-2}px" title="${esc(p.name)}: development ${fmtW(st)} to ${fmtW(f.finish+1)}">${(f.finish-st+1)*W>110?esc(SNAME(p.stage)):''}</div>${relW(f)>f.finish+1?`<div class="bar uat" style="--sc:var(--s-uat);left:${X(f.finish+1)}px;width:${(relW(f)-f.finish-1)*W-2}px" title="UAT and release"></div>`:''}<div class="bar-after" style="left:${X(relW(f))+6}px">${fmtW(relW(f))}</div>`;
+    return `<div class="tl-row"><div class="tl-name"><span class="rk">${i+1}</span>${plink(p)}</div><div class="tl-track" style="width:${TW+120}px">${grid}${bar}</div></div>`}).join('');
+  const done=shipped.map(p=>{const a=devStart(p),r=wkOf(reachedOn(p,'released'));
+    const bar=a==null||r==null?`<div class="bar-after" style="left:${X(-P)+8}px">No dates recorded</div>`:`<div class="bar done" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${X(a)}px;width:${Math.max(1,r-a)*W-2}px" title="${esc(p.name)}: development ${fmtW(a)}, released ${fmtD(reachedOn(p,'released').toISOString().slice(0,10))}">${(r-a)*W>110?'Shipped':''}</div><div class="bar-after" style="left:${X(r)+6}px">Released ${fmtD(reachedOn(p,'released').toISOString().slice(0,10))}</div>`;
+    return `<div class="tl-row shipped"><div class="tl-name"><span class="rk"></span>${plink(p)}</div><div class="tl-track" style="width:${TW+120}px">${grid}${bar}</div></div>`}).join('');
+  const H=HH+rowsList.length*RH+(shipped.length?RH:0);
+  return viewHead('Timeline','Solid bars are development, pale bars are UAT and release, and striped bars are already in progress. Shipped work sits at the bottom. Scroll sideways, or hold the middle mouse button and drag, to move back and forward in time.',`<button class="btn sm" data-act="tltoday">Jump to this week</button>`)+
+   `<div class="tl" id="tl"><div class="tl-inner"><div class="tl-row head"><div class="tl-name"><span class="label">Project</span></div><div class="tl-track" style="width:${TW+120}px">${months}</div></div>${rows}
+   ${shipped.length?`<div class="tl-row sep"><div class="tl-name"><span class="label">Shipped</span></div><div class="tl-track" style="width:${TW+120}px"></div></div>${done}`:''}
+   <svg class="links" style="left:var(--namew);width:${TW}px;height:${H}px">${links}</svg>
+   ${S.releases.filter(r=>r.status!=='released').map(r=>{const x=X(0)+daysBetween(monday,parseD(r.date))/7*W;return x>=0&&x<=TW?`<div class="tl-rel" style="left:calc(var(--namew) + ${x.toFixed(1)}px);height:${H}px"><span>${esc(r.name)}</span></div>`:''}).join('')}
+   <div class="tl-today" style="left:calc(var(--namew) + ${X(0)}px);top:0;height:${H}px" title="This week"></div></div></div>
    <div class="legend">${STAGES.filter(s=>!DONE.has(s.id)).map(s=>`<span>${stageChip(s.id)}</span>`).join('')}<span><span style="display:inline-block;width:2px;height:12px;background:var(--bad);vertical-align:middle"></span> This week</span></div>`;
 }
+function tlToday(smooth){const el=document.getElementById('tl');const t=el&&el.querySelector('.tl-today');if(!t)return;const nw=parseFloat(getComputedStyle(el).getPropertyValue('--namew'))||224;el.scrollTo({left:Math.max(0,t.offsetLeft-nw-96),behavior:smooth?'smooth':'auto'})}
+let tlPan=null;
+document.addEventListener('mousedown',e=>{const el=e.target.closest?.('#tl');if(!el||e.button!==1)return;e.preventDefault();tlPan={el,x:e.clientX,y:e.clientY,sl:el.scrollLeft,sy:window.scrollY};el.classList.add('panning')});
+document.addEventListener('mousemove',e=>{if(!tlPan)return;tlPan.el.scrollLeft=tlPan.sl-(e.clientX-tlPan.x);window.scrollTo(window.scrollX,tlPan.sy-(e.clientY-tlPan.y))});
+document.addEventListener('mouseup',e=>{if(!tlPan)return;tlPan.el.classList.remove('panning');tlPan=null});
+document.addEventListener('auxclick',e=>{if(e.button===1&&e.target.closest?.('#tl'))e.preventDefault()});
 
 function vCapacity(){
   const {F,used,cap}=forecast(); const ed=canEdit(); const c=S.capacity;
@@ -989,7 +1011,8 @@ function render(){
   const sel=document.getElementById('role');
   sel.innerHTML=ROLES.map(r=>`<option value="${r.id}" ${r.id===role?'selected':''}>${r.name}${r.edit?'':' (view only)'}</option>`).join('');
   const fn={home:vHome,backlog:vBacklog,board:vBoard,timeline:vTimeline,releases:vReleases,release:vRelease,capacity:vCapacity,alerts:vAlerts}[view];
-  const mainEl=document.getElementById('main');mainEl.classList.toggle("wide",view==="backlog"||view==="board"||view==="timeline");mainEl.innerHTML=fn();
+  const mainEl=document.getElementById('main');mainEl.classList.toggle("wide",view==="backlog"||view==="board"||view==="timeline");const oldTl=document.getElementById('tl');const keepX=oldTl&&view==='timeline'?oldTl.scrollLeft:null;mainEl.innerHTML=fn();
+  if(view==='timeline'){if(keepX!=null)document.getElementById('tl').scrollLeft=keepX;else tlToday()}
   drawer();
 }
 const curHash=()=>view==='release'?'release-'+relId:view;
@@ -1024,6 +1047,7 @@ document.addEventListener('click',e=>{
   if(act==='bulkrm'&&ed){SEL.forEach(id=>{const p=byId(id);if(p)p.releaseId=null});const n=SEL.size;SEL.clear();save();render();toast(`${n} ${n===1?'project':'projects'} removed from their release.`);return}
   const bs=t.closest('[data-bfsec]'); if(bs){BF.sec=bs.dataset.bfsec;saveBF();render();return}
   if(act==='clearbf'){BF={...BF0};saveBF();render();return}
+  if(act==='tltoday'){tlToday(true);return}
   if(act==='adddep'&&canEdit()){const p=byId(openId);const lag=Math.max(0,Math.round(+depDraft.lag||0));const d={id:+depDraft.id,on:depDraft.on,then:depDraft.then};if(lag)d.lag=lag;if(!d.id||wouldCycle(p.id,d.id))return;if(!p.deps.some(x=>sameDep(x,d)))p.deps.push(d);depDraft.id='';depDraft.lag=0;save();render();toast('Dependency added. Forecasts updated.');return}
   if(act==='add'&&canEdit()){const id=S.nextId++;S.projects.push({id,name:'New project',stage:'intake',progress:0,owner:'Unassigned',budget:0,estimate:0,maxDevs:3,deps:[],summary:'',history:[],deliverables:del()});save();openId=id;history.replaceState(null,'','#project-'+id);render();setTimeout(()=>document.getElementById('p-name')?.select(),0);return}
   if(act==='delete'&&canEdit()){if(confirmDel!==openId){confirmDel=openId;drawer();return}const id=openId;S.projects=S.projects.filter(p=>p.id!==id);S.projects.forEach(p=>p.deps=p.deps.filter(x=>x.id!==id));S.alerts=S.alerts.filter(a=>a.pid!==id);save();closeDrawer();render();toast('Project deleted.');return}
