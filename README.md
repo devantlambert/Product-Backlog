@@ -4,7 +4,7 @@ A single place to manage the product backlog and share the state of every projec
 
 ## What it does
 
-- **Backlog:** a ranked list of projects with stage, budget, estimate and dependencies.
+- **Backlog:** two ranked sections, Committed (being built or planned for the near term) and Everything else. Budget and estimate are in developer weeks, and budget health compares actual spend to budget.
 - **Stages:** Intake → Discovery → Ready for Dev → In Development → UAT → Released → Post-release Review.
 - **Capacity forecast:** a weekly simulation hands roadmap capacity to in-flight work first, then to the backlog in rank order. It respects dependencies and each project's maximum team size, and produces forecast start and release dates.
 - **Project pages:** owner, budget against estimated cost, dependencies, and deliverables by team (Problem Statement, System Documentation, UAT Workbook, Marketing Hand-off, Post-release Analysis).
