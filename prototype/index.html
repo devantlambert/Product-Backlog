@@ -360,12 +360,14 @@ const DEP_TYPES=[
   {id:'SS',name:'Start to start',on:'dev',then:'start'},
   {id:'FF',name:'Finish to finish',on:'released',then:'finish'},
   {id:'SF',name:'Start to finish',on:'dev',then:'finish'},
-  {id:'gate',name:'Stage gate',on:null,then:null}];
+  {id:'gate',name:'Custom stage',on:null,then:null}];
 const GATE_STAGES=['discovery','ready','dev','uat','released','review'];
 const depType=d=>(DEP_TYPES.find(t=>t.on===d.on&&t.then===d.then)||{id:'gate'}).id;
-const depTag=d=>{const t=depType(d);return `<span class="deptag" title="${esc(depLong(d))}">${t==='gate'?(d.then==='start'?'Start':'Finish')+' at '+SNAME(d.on):t}</span>`};
+const lagTxt=d=>+d.lag>0?` plus ${+d.lag} day${+d.lag===1?'':'s'}`:'';
+const depTag=d=>{const t=depType(d);return `<span class="deptag" title="${esc(depLong(d))}">${t==='gate'?(d.then==='start'?'Start':'Finish')+' at '+SNAME(d.on):t}${+d.lag>0?' +'+(+d.lag)+'d':''}</span>`};
 const onText=on=>on==='dev'?'starts development':on==='released'?'is released':'reaches '+SNAME(on);
-const depLong=(d,a='This project',b)=>`${a} can't ${d.then} until ${b||esc(byId(d.id)?.name||'?')} ${onText(d.on)}`;
+const depLong=(d,a='This project',b)=>`${a} can't ${d.then} until ${b||esc(byId(d.id)?.name||'?')} ${onText(d.on)}${lagTxt(d)}`;
+const sameDep=(a,b)=>a.id===b.id&&a.on===b.on&&a.then===b.then&&(+a.lag||0)===(+b.lag||0);
 const normDep=d=>typeof d==='number'?{id:d,on:'released',then:'start'}:d;
 const BF0={sec:'all',stage:'',start:'',rel:'',health:'',bundle:''};
 const SEL=new Set(); let dragRow=null;
@@ -397,7 +399,7 @@ function bfMatch(p,f,sec){
   }
   return true;
 }
-let depDraft={type:'FS',id:'',then:'start',on:'uat'};
+let depDraft={id:'',then:'start',on:'released',lag:0};
 const VIEWS=[['home','Home'],['backlog','Backlog'],['board','Stages'],['timeline','Timeline'],['releases','Releases'],['capacity','Capacity'],['alerts','Alerts']];
 
 // ---------- sample data (fictional) ----------
@@ -545,6 +547,14 @@ function wouldCycle(pid,depId){ // does depId (transitively) depend on pid?
 // hold back its release. A project never takes more developers than its max team size.
 const UATW=()=>Math.max(0,+S.capacity.uatWeeks||0);
 const relW=f=>f.finish+1+UATW();
+function reachedOn(q,stage){ // date a project first reached a stage it has already passed, from its history
+  const h=(q.history||[]).filter(x=>SI(x.to)>=SI(stage)).map(x=>x.date).sort()[0];return h?new Date(h+'T00:00:00'):null}
+function depWeek(F,d){ // week a dependency is met, including any lag in days
+  const m=msWeek(F,d.id,d.on),lag=Math.max(0,+d.lag||0);
+  if(!lag||m===null)return m;
+  if(m===-Infinity){const q=byId(d.id),t=q&&reachedOn(q,d.on);if(!t)return -Infinity;t.setDate(t.getDate()+lag);const w=Math.ceil((t-monday)/(7*864e5));return w<=0?-Infinity:w}
+  return m+Math.ceil(lag/7);
+}
 function msWeek(F,qid,stage){ // week project qid reaches stage: -Infinity if already there, null if not yet known
   const q=byId(qid); if(!q||SI(q.stage)>=SI(stage))return -Infinity;
   const f=F[qid]; if(!f)return -Infinity;
@@ -563,7 +573,7 @@ function forecast(){
     let left=cap;
     for(const p of order){
       const f=F[p.id]; if(f.done!==null||f.noSize)continue;
-      if(f.start===null&&!p.deps.filter(d=>d.then==='start').every(d=>{const m=msWeek(F,d.id,d.on);return m!==null&&m<=w}))continue;
+      if(f.start===null&&!p.deps.filter(d=>d.then==='start').every(d=>{const m=depWeek(F,d);return m!==null&&m<=w}))continue;
       if(f.rem<=1e-9){f.start??=w;f.done=w;continue}
       if(left<=1e-9)continue;
       const a=Math.min(left,p.maxDevs||1,f.rem);
@@ -573,7 +583,7 @@ function forecast(){
     for(let changed=true;changed;){changed=false;
       for(const p of order){const f=F[p.id];
         if(f.done===null||f.finish!==null)continue;
-        if(p.deps.filter(d=>d.then==='finish').every(d=>{const m=msWeek(F,d.id,d.on);return m!==null&&w+1+UATW()>=m})){f.finish=w;changed=true}
+        if(p.deps.filter(d=>d.then==='finish').every(d=>{const m=depWeek(F,d);return m!==null&&w+1+UATW()>=m})){f.finish=w;changed=true}
       }}
     used.push(cap-left);
     if(order.every(p=>F[p.id].finish!==null||F[p.id].noSize))break;
@@ -581,7 +591,7 @@ function forecast(){
   for(const p of order){const f=F[p.id];
     if(ACTIVE.has(p.stage))f.inflight=true;
     if(f.start!==null&&!f.inflight){
-      for(const d of p.deps.filter(d=>d.then==='start')){const m=msWeek(F,d.id,d.on);if(m===f.start&&m>0)f.waitingOn=d}
+      for(const d of p.deps.filter(d=>d.then==='start')){const m=depWeek(F,d);if(m===f.start&&m>0)f.waitingOn=d}
     }
     if(f.done!==null&&f.finish!==null&&f.finish>f.done)f.heldBy=p.deps.find(d=>d.then==='finish');
     if(f.start===null||f.finish===null)f.unsched=true;
@@ -726,7 +736,7 @@ function vTimeline(){
   const idx={};open.forEach((p,i)=>idx[p.id]=i);
   let links='';
   open.forEach((p,i)=>{const f=F[p.id];if(f.start==null)return;
-    p.deps.forEach(d=>{if(idx[d.id]==null)return;const m=msWeek(F,d.id,d.on);if(m===null||m===-Infinity||f.finish==null)return;
+    p.deps.forEach(d=>{if(idx[d.id]==null)return;const m=depWeek(F,d);if(m===null||m===-Infinity||f.finish==null)return;
       const x1=m*W, y1=HH+idx[d.id]*RH+RH/2, x2=(d.then==='start'?f.start:relW(f))*W, y2=HH+i*RH+RH/2, mx=d.then==='start'?Math.max(x1+6,x2-6):x2+8;
       links+=`<path d="M${x1} ${y1} H${mx} V${y2} H${x2}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3"/><circle cx="${x1}" cy="${y1}" r="2" fill="var(--muted)"/><circle cx="${x2}" cy="${y2}" r="3" fill="var(--accent)"/>`;
     })});
@@ -908,10 +918,10 @@ function drawer(){
   const dis=ed?'':'disabled';
   const others=S.projects.filter(q=>q.id!==p.id&&!wouldCycle(p.id,q.id));
   const unblocks=S.projects.flatMap(q=>q.deps.filter(d=>d.id===p.id).map(d=>[q,d]));
-  if(depDraft.pid!==p.id)depDraft={pid:p.id,type:'FS',id:'',then:'start',on:'uat'};
-  const dt=DEP_TYPES.find(t=>t.id===depDraft.type);
-  const draft={id:+depDraft.id,on:dt.on||depDraft.on,then:dt.then||depDraft.then};
-  const dupe=p.deps.some(d=>d.id===draft.id&&d.on===draft.on&&d.then===draft.then);
+  if(depDraft.pid!==p.id)depDraft={pid:p.id,id:'',then:'start',on:'released',lag:0};
+  const draft={id:+depDraft.id,on:depDraft.on,then:depDraft.then,lag:Math.max(0,Math.round(+depDraft.lag||0))};
+  const dtype=depType(draft);
+  const dupe=p.deps.some(d=>sameDep(d,draft));
   const fc=DONE.has(p.stage)?'Shipped':f.noSize?'Add an estimate or a budget to forecast':f.unsched?'Can\'t be scheduled':f.heldBy?`${fmtW(f.start)} to ${fmtW(relW(f))} (release held by a dependency)`:f.inflight?`In flight · ships ${fmtW(relW(f))}`:`${fmtW(f.start)} to ${fmtW(relW(f))}`;
   const fact=(label,val,input)=>`<div><span class="label">${label}</span><div class="v">${ed&&input?input:val}</div></div>`;
   dr.innerHTML=`<div class="dh"><div style="min-width:0;flex:1">
@@ -934,14 +944,16 @@ function drawer(){
       </div></section>
       <section><span class="label">Summary</span>${ed?`<textarea id="p-sum" data-f="summary" rows="3" style="margin-top:6px">${esc(p.summary)}</textarea>`:`<p style="margin:4px 0 0">${esc(p.summary)||'<span class="muted">No summary yet.</span>'}</p>`}</section>
       <section class="panel"><header><h3>Dependencies</h3><span class="muted" style="font-size:12px">Start means entering In Development. Finish means released.</span></header><div class="body" style="display:grid;gap:16px">
-        <div><span class="label">This project waits on</span>${p.deps.length?`<ul class="deprows">${p.deps.map((d,i)=>{const q=byId(d.id);return `<li><span>Can't <b>${d.then}</b> until ${q?`<a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a>`:'?'} ${onText(d.on)} ${depTag(d)}${q?' '+stageChip(q.stage):''}</span>${ed?`<button class="btn sm ghost" data-undep="${i}" aria-label="Remove dependency">Remove</button>`:''}</li>`}).join('')}</ul>`:'<p class="empty">Nothing. This project can start whenever capacity allows.</p>'}
+        <div><span class="label">This project waits on</span>${p.deps.length?`<ul class="deprows">${p.deps.map((d,i)=>{const q=byId(d.id);return `<li><span>Can't <b>${d.then}</b> until ${q?`<a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a>`:'?'} ${onText(d.on)}${lagTxt(d)} ${depTag(d)}${q?' '+stageChip(q.stage):''}</span>${ed?`<button class="btn sm ghost" data-undep="${i}" aria-label="Remove dependency">Remove</button>`:''}</li>`}).join('')}</ul>`:'<p class="empty">Nothing. This project can start whenever capacity allows.</p>'}
         ${ed?`<div class="depform"><span class="label">Add a dependency</span>
-          <div class="row"><label for="dep-type" class="muted">Type</label><select id="dep-type" data-dep="type">${DEP_TYPES.map(t=>`<option value="${t.id}" ${t.id===depDraft.type?'selected':''}>${t.name}${t.id==='gate'?'':' ('+t.id+')'}</option>`).join('')}</select>
-          <label for="dep-proj" class="muted">Project</label><select id="dep-proj" data-dep="id"><option value="">Choose a project…</option>${others.map(q=>`<option value="${q.id}" ${String(q.id)===String(depDraft.id)?'selected':''}>${esc(q.name)}</option>`).join('')}</select></div>
-          ${depDraft.type==='gate'?`<div class="row">This project can't <select id="dep-then" data-dep="then" aria-label="Start or finish"><option value="start" ${depDraft.then==='start'?'selected':''}>start</option><option value="finish" ${depDraft.then==='finish'?'selected':''}>finish</option></select> until it reaches <select id="dep-on" data-dep="on" aria-label="Stage">${GATE_STAGES.map(st=>`<option value="${st}" ${st===depDraft.on?'selected':''}>${SNAME(st)}</option>`).join('')}</select></div>`:''}
+          <div class="row">This project can't <select id="dep-then" data-dep="then" aria-label="Start or finish"><option value="start" ${draft.then==='start'?'selected':''}>start</option><option value="finish" ${draft.then==='finish'?'selected':''}>finish</option></select>
+            until <select id="dep-proj" data-dep="id" aria-label="Project"><option value="">choose a project…</option>${others.map(q=>`<option value="${q.id}" ${String(q.id)===String(depDraft.id)?'selected':''}>${esc(q.name)}</option>`).join('')}</select></div>
+          <div class="row"><select id="dep-on" data-dep="on" aria-label="Stage">${GATE_STAGES.map(st=>`<option value="${st}" ${st===draft.on?'selected':''}>${onText(st)}</option>`).join('')}</select>
+            plus <input id="dep-lag" type="number" min="0" step="1" value="${draft.lag}" data-dep="lag" aria-label="Days after" style="width:80px"> days
+            <span class="muted">Type</span> <select id="dep-type" data-dep="type" aria-label="Dependency type">${DEP_TYPES.map(t=>`<option value="${t.id}" ${t.id===dtype?'selected':''}>${t.name}${t.id==='gate'?'':' ('+t.id+')'}</option>`).join('')}</select></div>
           <div class="row"><button class="btn primary sm" data-act="adddep" ${!depDraft.id||dupe?'disabled':''}>Add dependency</button><span class="preview">${depDraft.id?(dupe?'This dependency already exists.':depLong(draft)+'.'):'Pick a project to see how the rule reads.'}</span></div>
         </div>`:''}</div>
-        <div><span class="label">Projects waiting on this one</span>${unblocks.length?`<ul class="deprows">${unblocks.map(([q,d])=>`<li><span><a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a> can't ${d.then} until this project ${onText(d.on)} ${depTag(d)}</span></li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</div>
+        <div><span class="label">Projects waiting on this one</span>${unblocks.length?`<ul class="deprows">${unblocks.map(([q,d])=>`<li><span><a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a> can't ${d.then} until this project ${onText(d.on)}${lagTxt(d)} ${depTag(d)}</span></li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</div>
       </div></section>
       <section class="panel"><header><h3>Deliverables by team</h3></header><div class="body" style="overflow-x:auto"><table class="dtable"><thead><tr><th>Deliverable</th><th>Team</th><th>Needed</th><th>Status</th><th>Link</th></tr></thead><tbody>
         ${DELIVS.map(dl=>{const x=p.deliverables[dl.id];const st=delState(p,dl);return `<tr><td><b>${dl.name}</b>${st==='late'?' <span class="pill bad">Overdue</span>':''}</td><td class="muted">${dl.team}</td><td class="muted" style="font-size:.8rem">${dl.when}</td>
@@ -1005,7 +1017,7 @@ document.addEventListener('click',e=>{
   if(act==='bulkrm'&&ed){SEL.forEach(id=>{const p=byId(id);if(p)p.releaseId=null});const n=SEL.size;SEL.clear();save();render();toast(`${n} ${n===1?'project':'projects'} removed from their release.`);return}
   const bs=t.closest('[data-bfsec]'); if(bs){BF.sec=bs.dataset.bfsec;saveBF();render();return}
   if(act==='clearbf'){BF={...BF0};saveBF();render();return}
-  if(act==='adddep'&&canEdit()){const p=byId(openId);const dt=DEP_TYPES.find(x=>x.id===depDraft.type);const d={id:+depDraft.id,on:dt.on||depDraft.on,then:dt.then||depDraft.then};if(!d.id||wouldCycle(p.id,d.id))return;if(!p.deps.some(x=>x.id===d.id&&x.on===d.on&&x.then===d.then))p.deps.push(d);depDraft.id='';save();render();toast('Dependency added. Forecasts updated.');return}
+  if(act==='adddep'&&canEdit()){const p=byId(openId);const lag=Math.max(0,Math.round(+depDraft.lag||0));const d={id:+depDraft.id,on:depDraft.on,then:depDraft.then};if(lag)d.lag=lag;if(!d.id||wouldCycle(p.id,d.id))return;if(!p.deps.some(x=>sameDep(x,d)))p.deps.push(d);depDraft.id='';depDraft.lag=0;save();render();toast('Dependency added. Forecasts updated.');return}
   if(act==='add'&&canEdit()){const id=S.nextId++;S.projects.push({id,name:'New project',stage:'intake',progress:0,owner:'Unassigned',budget:0,estimate:0,maxDevs:3,deps:[],summary:'',history:[],deliverables:del()});save();openId=id;history.replaceState(null,'','#project-'+id);render();setTimeout(()=>document.getElementById('p-name')?.select(),0);return}
   if(act==='delete'&&canEdit()){if(confirmDel!==openId){confirmDel=openId;drawer();return}const id=openId;S.projects=S.projects.filter(p=>p.id!==id);S.projects.forEach(p=>p.deps=p.deps.filter(x=>x.id!==id));S.alerts=S.alerts.filter(a=>a.pid!==id);save();closeDrawer();render();toast('Project deleted.');return}
   if(act==='reset'){S=seed();save();openId=null;render();toast('Sample data restored.');return}
@@ -1034,7 +1046,7 @@ document.addEventListener('change',e=>{
   const p=openId&&byId(openId);
   if(t.dataset.f==='committed'&&p){p.committed=t.value==='1';S.projects.splice(S.projects.indexOf(p),1);p.committed?S.projects.push(p):S.projects.unshift(p);S.projects=[...committedList(),...laterList(),...S.projects.filter(x=>DONE.has(x.stage))];save();render();return}
   if(t.dataset.f&&p){const k=t.dataset.f;let v=t.value;if(t.type==='number'){v=Math.max(0,+v||0);if(k==='progress')v=Math.min(100,v);if(k==='maxDevs')v=Math.max(1,v);if(k==='spent'||k==='budget'||k==='estimate')v=Math.round(v*2)/2}p[k]=v;save();render();return}
-  if(t.dataset.dep&&p){depDraft[t.dataset.dep]=t.value;drawer();document.getElementById(t.id)?.focus();return}
+  if(t.dataset.dep&&p){const k=t.dataset.dep;if(k==='type'){const dt=DEP_TYPES.find(x=>x.id===t.value);if(dt&&dt.on){depDraft.on=dt.on;depDraft.then=dt.then}else if(dt){depDraft.on='uat'}}else depDraft[k]=t.value;drawer();document.getElementById(t.id)?.focus();return}
   if(t.dataset.dl&&p){p.deliverables[t.dataset.dl][t.dataset.k]=t.value;save();render();return}
   if(t.dataset.cap){let v=Math.max(0,+t.value||0);if(t.dataset.cap==='roadmapPct')v=Math.min(100,v);S.capacity[t.dataset.cap]=v;save();render();setTimeout(()=>document.getElementById(t.id)?.focus(),0);return}
   if(t.dataset.sub){const r=t.dataset.sub;if(!(canEdit()||r===role))return;const set=new Set(S.subs[r]||[]);t.checked?set.add(t.dataset.stage):set.delete(t.dataset.stage);S.subs[r]=[...set];save();toast('Alert preferences saved.');return}
