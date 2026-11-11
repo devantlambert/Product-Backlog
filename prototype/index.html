@@ -917,7 +917,7 @@ function drawer(){
   const ed=canEdit(); const {F}=forecast(); const f=F[p.id]||{};
   const dis=ed?'':'disabled';
   const others=S.projects.filter(q=>q.id!==p.id&&!wouldCycle(p.id,q.id));
-  const unblocks=S.projects.flatMap(q=>q.deps.filter(d=>d.id===p.id).map(d=>[q,d]));
+  const unblocks=S.projects.flatMap(q=>q.deps.map((d,i)=>[q,d,i]).filter(([,d])=>d.id===p.id));
   if(depDraft.pid!==p.id)depDraft={pid:p.id,id:'',then:'start',on:'released',lag:0};
   const draft={id:+depDraft.id,on:depDraft.on,then:depDraft.then,lag:Math.max(0,Math.round(+depDraft.lag||0))};
   const dupe=p.deps.some(d=>sameDep(d,draft));
@@ -951,7 +951,7 @@ function drawer(){
             plus <input id="dep-lag" type="number" min="0" step="1" value="${draft.lag}" data-dep="lag" aria-label="Days after" style="width:80px"> days</div>
           <div class="row"><button class="btn primary sm" data-act="adddep" ${!depDraft.id||dupe?'disabled':''}>Add dependency</button><span class="preview">${depDraft.id?(dupe?'This dependency already exists.':depLong(draft)+'.'):'Pick a project to see how the rule reads.'}</span></div>
         </div>`:''}</div>
-        <div><span class="label">Projects waiting on this one</span>${unblocks.length?`<ul class="deprows">${unblocks.map(([q,d])=>`<li><span><a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a> can't ${d.then} until this project ${onText(d.on)}${lagTxt(d)} ${depTag(d)}</span></li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</div>
+        <div><span class="label">Projects waiting on this one</span>${unblocks.length?`<ul class="deprows">${unblocks.map(([q,d,i])=>`<li><span><a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a> can't ${d.then} until this project ${onText(d.on)}${lagTxt(d)} ${depTag(d)}</span>${ed?`<button class="btn sm ghost" data-undep="${i}" data-undep-of="${q.id}" aria-label="Remove dependency">Remove</button>`:''}</li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</div>
       </div></section>
       <section class="panel"><header><h3>Deliverables by team</h3></header><div class="body" style="overflow-x:auto"><table class="dtable"><thead><tr><th>Deliverable</th><th>Team</th><th>Needed</th><th>Status</th><th>Link</th></tr></thead><tbody>
         ${DELIVS.map(dl=>{const x=p.deliverables[dl.id];const st=delState(p,dl);return `<tr><td><b>${dl.name}</b>${st==='late'?' <span class="pill bad">Overdue</span>':''}</td><td class="muted">${dl.team}</td><td class="muted" style="font-size:.8rem">${dl.when}</td>
@@ -1000,7 +1000,7 @@ document.addEventListener('click',e=>{
     else return;
     S.projects=[...L,...S.projects.filter(x=>DONE.has(x.stage))];save();render();return}
   const st=t.closest('[data-stage-to]'); if(st){setStage(byId(openId),st.dataset.stageTo);return}
-  const ud=t.closest('[data-undep]'); if(ud&&canEdit()){const p=byId(openId);p.deps.splice(+ud.dataset.undep,1);save();render();toast('Dependency removed.');return}
+  const ud=t.closest('[data-undep]'); if(ud&&canEdit()){const p=byId(+(ud.dataset.undepOf||openId));p.deps.splice(+ud.dataset.undep,1);save();render();toast('Dependency removed.');return}
   const act=t.closest('[data-act]')?.dataset.act;
   if(act==='close'||t.id==='scrim'){closeDrawer();return}
   const ed=canEdit(); const r=view==='release'?relById(relId):null;
