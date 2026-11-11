@@ -233,6 +233,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .depform{display:grid;gap:8px;margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:var(--r)}
 .depform .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
 .depform select{max-width:100%}
+.stagesel{border-left:4px solid var(--sc);min-height:32px;font-size:13px;padding:0 4px;max-width:160px}
 .linkin{display:flex;gap:8px;align-items:center}.linkin input{flex:1;min-width:0}.linkin .btn{flex:none;text-decoration:none;color:var(--accent)}
 .depform .preview{font-size:12px;line-height:16px;color:var(--muted)}
 .dtable input[type=url]{width:100%}
@@ -685,7 +686,7 @@ function vBacklog(){
     if(!bfMatch(p,f,sec))return '';
     return `<tr data-rowdrop="${p.id}" data-sec="${sec}" ${open&&canDrag?`draggable="true" data-rowdrag="${p.id}"`:''}><td class="rank">${open&&ed?`<input type="checkbox" class="pick" data-pick="${p.id}" ${SEL.has(p.id)?'checked':''} aria-label="Select ${esc(p.name)}">`:''}${open&&canDrag?grip(p):''}${open?offset+i+1:''}</td>
     <td><a class="name" draggable="false" href="#project-${p.id}" data-open="${p.id}">${esc(p.name)}</a><div class="sub">${esc(p.owner)}${f.waitingOn?` · waits for ${esc(byId(f.waitingOn.id).name)} to ${f.waitingOn.on==='dev'?'start':f.waitingOn.on==='released'?'ship':'reach '+SNAME(f.waitingOn.on)}`:''}</div></td>
-    <td>${stageChip(p.stage)}</td>
+    <td>${ed?`<select class="stagesel" style="--sc:var(--s-${p.stage})" data-bstage="${p.id}" draggable="false" aria-label="Stage of ${esc(p.name)}">${STAGES.map(st=>`<option value="${st.id}" ${st.id===p.stage?'selected':''}>${st.name}</option>`).join('')}</select>`:stageChip(p.stage)}</td>
     <td class="right num">${wk(p.budget)}</td>
     <td class="right num">${wk(p.estimate)}</td>
     <td>${budgetPill(p)}<div class="sub" style="white-space:nowrap">${spendLine(p)}</div></td>
@@ -1027,6 +1028,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openId)closeDrawer();if(e.key==='Enter'&&e.target.matches('.card[data-open]'))e.target.click()});
 document.addEventListener('change',e=>{
+  if(e.target.dataset?.bstage){const q=byId(+e.target.dataset.bstage);if(q)setStage(q,e.target.value);return}
   const t=e.target;
   if(t.id==='role'){role=t.value;try{localStorage.setItem(KEY+'-role',role)}catch(_){};const h=R().home;if(!openId){view=h;history.replaceState(null,'','#'+view)}render();toast(`Now viewing as ${R().name}.`);return}
   if(t.dataset.actId){const r=relById(relId);const a=r&&r.activities.find(x=>x.id===+t.dataset.actId);if(!a)return;const k=t.dataset.ak;
