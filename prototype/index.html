@@ -150,7 +150,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .tl-inner{position:relative}
 .tl-row{display:flex;height:40px;border-top:1px solid var(--line)}
 .tl-row.head{height:48px;border-top:0;background:var(--sunk)}
-.tl-name{position:sticky;left:0;z-index:3;flex:none;width:224px;background:var(--surface);border-right:1px solid var(--line);padding:0 12px;display:flex;align-items:center;gap:8px;font-size:14px;overflow:hidden;white-space:nowrap}
+.tl-name{position:sticky;left:0;z-index:3;flex:none;width:var(--namew);background:var(--surface);border-right:1px solid var(--line);padding:0 12px;display:flex;align-items:center;gap:8px;font-size:14px;overflow:hidden;white-space:nowrap}
 .tl-row.head .tl-name{background:var(--sunk)}
 .tl-name a{color:var(--fg);text-decoration:none;overflow:hidden;text-overflow:ellipsis}
 .tl-name a:hover{color:var(--accent);text-decoration:underline}
@@ -164,6 +164,8 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .bar.inprog{background-image:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bar-ink) 22%,transparent) 0 6px,transparent 6px 12px)}
 .bar-after{position:absolute;top:10px;font-size:12px;line-height:20px;color:var(--muted);white-space:nowrap;z-index:2}
 .tl svg.links{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:visible}
+.bar.uat{opacity:.35;z-index:1}
+.tl{--namew:224px}
 .legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-top:12px;font-size:12px;line-height:16px;color:var(--muted)}
 
 /* capacity */
@@ -190,13 +192,13 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 
 /* floating detail panel: the only place with a shadow */
 #scrim{position:fixed;inset:0;background:rgba(20,26,23,.4);z-index:40}
-#drawer{position:fixed;top:0;right:0;bottom:0;width:min(740px,100%);background:var(--bg);z-index:41;box-shadow:var(--float-shadow);border-left:1px solid var(--line);overflow-y:auto;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) 0}
+#drawer{position:fixed;top:0;right:0;bottom:0;width:min(1120px,100%);background:var(--bg);z-index:41;box-shadow:var(--float-shadow);border-left:1px solid var(--line);overflow-y:auto;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) 0}
 .dh{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:16px 24px;z-index:2;display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
 .dh h2{font-size:24px;line-height:32px}
 .dh .meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:14px;color:var(--muted)}
 .db{padding:24px;display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
 .db > *{min-width:0}
-.stepper{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px;counter-reset:st}
+.stepper{display:flex;flex-wrap:wrap;gap:4px;counter-reset:st}
 .stepper button{flex:1 0 auto;display:flex;align-items:center;gap:6px;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:0 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
 .stepper button::before{counter-increment:st;content:counter(st);display:inline-grid;place-items:center;width:18px;height:18px;border-radius:var(--r-sm);background:var(--sunk);font-size:11px;font-variant-numeric:tabular-nums}
 .stepper button.past{color:var(--fg)}
@@ -208,7 +210,28 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px}
 .facts .v{font-weight:600;margin-top:4px;font-size:14px}
 .facts input,.facts select{width:100%}
-.dtable{width:100%;min-width:620px}
+.dtable{width:100%;min-width:720px;table-layout:fixed}
+.dtable th:nth-child(1){width:22%}.dtable th:nth-child(2){width:15%}.dtable th:nth-child(3){width:15%}.dtable th:nth-child(4){width:14%}.dtable th:nth-child(5){width:34%}
+.dtable td{overflow:hidden}
+.dtable select{width:100%}
+.linktext{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;margin-bottom:16px}
+.filters .f{display:grid;gap:4px}
+.filters .f label,.filters .f .label{font-size:12px;line-height:16px;font-weight:600;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.seg button{border:0;border-right:1px solid var(--line);background:transparent;min-height:40px;padding:0 14px;font-size:14px;cursor:pointer;color:var(--muted)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.filters .count{font-size:12px;line-height:16px;color:var(--muted);margin-left:auto;align-self:center;display:flex;gap:8px;align-items:center}
+.deptag{display:inline-block;font-size:11px;line-height:16px;font-weight:600;padding:0 4px;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.deprows{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.deprows li{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:var(--r);padding:8px 8px 8px 12px;font-size:14px;line-height:20px;background:var(--surface)}
+.deprows li > span{min-width:0}
+.deprows a{font-weight:600}
+.depform{display:grid;gap:8px;margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:var(--r)}
+.depform .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.depform select{max-width:100%}
+.depform .preview{font-size:12px;line-height:16px;color:var(--muted)}
 .dtable input[type=url]{width:100%}
 .hist li{font-size:14px}
 .close{display:grid;place-items:center;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);width:40px;height:40px;cursor:pointer;flex:none;color:var(--fg)}
@@ -219,7 +242,7 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 footer.dev-footer{border-top:1px solid var(--line);margin-top:24px}
 footer.dev-footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;align-items:center;padding-block:16px 24px;font-size:12px;line-height:16px;color:var(--muted)}
 .dev-byline{font-size:14px;color:var(--fg)} .dev-byline b{color:var(--brand)}
-@media (max-width:640px){.tl-name{width:152px}h1{font-size:24px;line-height:32px}.db,.dh{padding-left:16px;padding-right:16px}}
+@media (max-width:640px){.tl{--namew:152px}.tl-name{width:152px}h1{font-size:24px;line-height:32px}.db,.dh{padding-left:16px;padding-right:16px}}
 @media (prefers-reduced-motion:no-preference){#drawer{animation:slide .25s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}}}
 </style>
 
@@ -267,6 +290,47 @@ const ROLES=[
   {id:'marketing',name:'Marketing',          edit:false, home:'home', note:'Read-only. Your home shows upcoming launches and the status of each marketing hand-off.'},
   {id:'support',  name:'Support',            edit:false, home:'home', note:'Read-only. Your home shows what is about to ship and whether system docs are ready.'},
   {id:'cs',       name:'Customer Success',   edit:false, home:'home', note:'Read-only. Your home shows what is about to ship so you can brief customers.'}];
+const DEP_TYPES=[
+  {id:'FS',name:'Finish to start',on:'released',then:'start'},
+  {id:'SS',name:'Start to start',on:'dev',then:'start'},
+  {id:'FF',name:'Finish to finish',on:'released',then:'finish'},
+  {id:'SF',name:'Start to finish',on:'dev',then:'finish'},
+  {id:'gate',name:'Stage gate',on:null,then:null}];
+const GATE_STAGES=['discovery','ready','dev','uat','released','review'];
+const depType=d=>(DEP_TYPES.find(t=>t.on===d.on&&t.then===d.then)||{id:'gate'}).id;
+const depTag=d=>{const t=depType(d);return `<span class="deptag" title="${esc(depLong(d))}">${t==='gate'?(d.then==='start'?'Start':'Finish')+' at '+SNAME(d.on):t}</span>`};
+const onText=on=>on==='dev'?'starts development':on==='released'?'is released':'reaches '+SNAME(on);
+const depLong=(d,a='This project',b)=>`${a} can't ${d.then} until ${b||esc(byId(d.id)?.name||'?')} ${onText(d.on)}`;
+const normDep=d=>typeof d==='number'?{id:d,on:'released',then:'start'}:d;
+const BF0={sec:'all',stage:'',start:'',rel:'',health:''};
+let BF={...BF0}; try{BF={...BF0,...JSON.parse(localStorage.getItem('roadmap-filters')||'{}')}}catch(e){}
+const saveBF=()=>{try{localStorage.setItem('roadmap-filters',JSON.stringify(BF))}catch(e){}};
+const bfActive=()=>Object.keys(BF0).some(k=>BF[k]!==BF0[k]);
+const healthKey=p=>!p.budget?'nobudget':!p.spent?'nospend':p.spent>p.budget?'over':p.spent/p.budget>=.9?'high':'ok';
+const HEALTH_OPTS=[['ok','Under 90% used'],['high','90% or more used'],['over','Over budget'],['nospend','No spend yet'],['nobudget','No budget']];
+const START_OPTS=[['flight','In flight'],['w4','Within 4 weeks'],['m3','Within 3 months'],['m6','Within 6 months'],['later','More than 6 months out'],['none','Can\'t be scheduled']];
+const REL_OPTS=[['w4','Within 4 weeks'],['m3','Within 3 months'],['m6','Within 6 months'],['later','More than 6 months out'],['none','Can\'t be scheduled'],['shipped','Already shipped']];
+function inWindow(key,w){return key==='w4'?w<4:key==='m3'?w<13:key==='m6'?w<26:key==='later'?w>=26:true}
+function bfMatch(p,f,sec){
+  if(BF.sec!=='all'&&BF.sec!==sec)return false;
+  if(BF.stage&&p.stage!==BF.stage)return false;
+  if(BF.health&&healthKey(p)!==BF.health)return false;
+  const shipped=sec==='shipped';
+  if(BF.start){
+    if(shipped)return false;
+    if(BF.start==='flight'){if(!f.inflight)return false}
+    else if(BF.start==='none'){if(!f.unsched)return false}
+    else if(f.inflight||f.start==null||!inWindow(BF.start,f.start))return false;
+  }
+  if(BF.rel){
+    if(BF.rel==='shipped'){if(!shipped)return false}
+    else if(shipped)return false;
+    else if(BF.rel==='none'){if(!f.unsched)return false}
+    else if(f.finish==null||!inWindow(BF.rel,relW(f)))return false;
+  }
+  return true;
+}
+let depDraft={type:'FS',id:'',then:'start',on:'uat'};
 const VIEWS=[['home','Home'],['backlog','Backlog'],['board','Stages'],['timeline','Timeline'],['capacity','Capacity'],['alerts','Alerts']];
 
 // ---------- sample data (fictional) ----------
@@ -279,20 +343,20 @@ function seed(){
     P(2,'SSO and SCIM provisioning','dev',{progress:55,owner:'Priya S.',budget:26,spent:14,committed:true,estimate:24,maxDevs:4,summary:'Enterprise single sign-on (SAML/OIDC) plus automatic user provisioning from identity providers.',deliverables:del('done','prog','none','none','none'),history:[{date:d(100),to:'discovery'},{date:d(60),to:'ready'},{date:d(40),to:'dev'}]}),
     P(4,'Mobile offline mode','dev',{progress:20,owner:'Marcus T.',budget:32,spent:7,committed:true,estimate:30,maxDevs:3,summary:'Field users can view and edit records without a connection; changes sync when back online.',deliverables:del('done','none','none','none','none'),history:[{date:d(80),to:'discovery'},{date:d(35),to:'ready'},{date:d(14),to:'dev'}]}),
     P(6,'Public API v2','ready',{owner:'Priya S.',budget:25,spent:0,committed:true,estimate:28,maxDevs:4,summary:'Versioned REST API with consistent pagination, webhooks and scoped API keys.',deliverables:del('done','none','none','none','none'),history:[{date:d(50),to:'discovery'},{date:d(9),to:'ready'}]}),
-    P(9,'Roles and permissions 2.0','ready',{owner:'Jordan K.',budget:22,spent:0,committed:true,estimate:20,maxDevs:3,deps:[2],summary:'Custom roles with granular permissions, mapped to identity-provider groups.',deliverables:del('done','none','none','none','none'),history:[{date:d(45),to:'discovery'},{date:d(12),to:'ready'}]}),
-    P(11,'Audit log','ready',{owner:'Jordan K.',budget:10,spent:0,committed:true,estimate:10,maxDevs:2,deps:[9],summary:'Searchable record of who changed what and when, exportable for compliance reviews.',deliverables:del('prog','none','none','none','none'),history:[{date:d(30),to:'discovery'},{date:d(4),to:'ready'}]}),
+    P(9,'Roles and permissions 2.0','ready',{owner:'Jordan K.',budget:22,spent:0,committed:true,estimate:20,maxDevs:3,deps:[{id:2,on:'released',then:'start'}],summary:'Custom roles with granular permissions, mapped to identity-provider groups.',deliverables:del('done','none','none','none','none'),history:[{date:d(45),to:'discovery'},{date:d(12),to:'ready'}]}),
+    P(11,'Audit log','ready',{owner:'Jordan K.',budget:10,spent:0,committed:true,estimate:10,maxDevs:2,deps:[{id:9,on:'uat',then:'start'}],summary:'Searchable record of who changed what and when, exportable for compliance reviews.',deliverables:del('prog','none','none','none','none'),history:[{date:d(30),to:'discovery'},{date:d(4),to:'ready'}]}),
     P(5,'Notifications center','discovery',{owner:'Marcus T.',budget:18,spent:0,committed:false,estimate:16,maxDevs:3,summary:'One inbox for in-app, email and mobile notifications with per-user preferences.',deliverables:del('prog','none','none','none','none'),history:[{date:d(20),to:'discovery'}]}),
-    P(7,'Warehouse data export','discovery',{owner:'Priya S.',budget:12,spent:0,committed:false,estimate:12,maxDevs:2,deps:[6],summary:'Scheduled exports to common data warehouses so customers can join product data with their own.',deliverables:del('prog','none','none','none','none'),history:[{date:d(18),to:'discovery'}]}),
-    P(12,'Multi-currency pricing','discovery',{owner:'Jordan K.',budget:15,spent:0,committed:false,estimate:14,maxDevs:2,deps:[1],summary:'Charge customers in their local currency with tax-inclusive price display.',deliverables:del('none','none','none','none','none'),history:[{date:d(11),to:'discovery'}]}),
-    P(3,'Usage analytics dashboard','intake',{owner:'Marcus T.',budget:22,spent:0,committed:false,estimate:20,maxDevs:3,deps:[7],summary:'Give account admins a view of adoption by team and feature.',deliverables:del('none','none','none','none','none')}),
-    P(10,'In-app help widget','intake',{owner:'Marcus T.',budget:6,spent:0,committed:false,estimate:6,maxDevs:2,summary:'Contextual help articles and a contact form inside the product.',deliverables:del('none','none','none','none','none')}),
+    P(7,'Warehouse data export','discovery',{owner:'Priya S.',budget:12,spent:0,committed:false,estimate:12,maxDevs:2,deps:[{id:6,on:'dev',then:'start'}],summary:'Scheduled exports to common data warehouses so customers can join product data with their own.',deliverables:del('prog','none','none','none','none'),history:[{date:d(18),to:'discovery'}]}),
+    P(12,'Multi-currency pricing','discovery',{owner:'Jordan K.',budget:15,spent:0,committed:false,estimate:14,maxDevs:2,deps:[{id:1,on:'released',then:'start'}],summary:'Charge customers in their local currency with tax-inclusive price display.',deliverables:del('none','none','none','none','none'),history:[{date:d(11),to:'discovery'}]}),
+    P(3,'Usage analytics dashboard','intake',{owner:'Marcus T.',budget:22,spent:0,committed:false,estimate:20,maxDevs:3,deps:[{id:7,on:'released',then:'start'}],summary:'Give account admins a view of adoption by team and feature.',deliverables:del('none','none','none','none','none')}),
+    P(10,'In-app help widget','intake',{owner:'Marcus T.',budget:6,spent:0,committed:false,estimate:6,maxDevs:2,deps:[{id:5,on:'released',then:'finish'}],summary:'Contextual help articles and a contact form inside the product.',deliverables:del('none','none','none','none','none')}),
     P(13,'Search relevance overhaul','intake',{owner:'Priya S.',budget:0,spent:0,committed:false,estimate:18,maxDevs:3,summary:'Rebuild the search index with typo tolerance and ranking tuned on real queries.',deliverables:del('none','none','none','none','none')}),
     P(14,'Accessibility remediation','released',{owner:'Jordan K.',budget:13,spent:14,committed:true,estimate:12,maxDevs:3,progress:100,summary:'Bring core workflows to WCAG 2.2 AA.',deliverables:del('done','done','done','done','prog'),history:[{date:d(150),to:'discovery'},{date:d(120),to:'ready'},{date:d(95),to:'dev'},{date:d(30),to:'uat'},{date:d(8),to:'released'}]}),
     P(8,'Onboarding checklist redesign','review',{owner:'Marcus T.',budget:9,spent:8,committed:true,estimate:8,maxDevs:2,progress:100,summary:'Guided first-week checklist for new accounts.',deliverables:del('done','done','done','done','prog'),history:[{date:d(160),to:'discovery'},{date:d(130),to:'ready'},{date:d(110),to:'dev'},{date:d(70),to:'uat'},{date:d(45),to:'released'},{date:d(15),to:'review'}]}),
   ];
   return {
-    v:2, nextId:15,
-    capacity:{devs:10, roadmapPct:75},
+    v:3, nextId:15,
+    capacity:{devs:10, roadmapPct:75, uatWeeks:1},
     projects,
     subs:{product:['review'],dev:['ready'],exec:['dev','released'],marketing:['uat','released'],support:['uat','released'],cs:['released','review']},
     alerts:[
@@ -305,9 +369,10 @@ function seed(){
 }
 
 // ---------- state ----------
-const KEY='roadmap-prototype-v2';
+const KEY='roadmap-prototype-v3';
 let S; try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-if(!S||S.v!==2)S=seed();
+if(!S||S.v!==3)S=seed();
+S.projects.forEach(p=>p.deps=(p.deps||[]).map(normDep));
 let role='product'; try{role=localStorage.getItem(KEY+'-role')||'product'}catch(e){}
 if(!ROLES.find(r=>r.id===role))role='product';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -352,42 +417,59 @@ function delDots(p){return `<span class="dots" title="Deliverables">${DELIVS.map
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3200)}
 function wouldCycle(pid,depId){ // does depId (transitively) depend on pid?
   const seen=new Set();const st=[depId];
-  while(st.length){const x=st.pop();if(x===pid)return true;if(seen.has(x))continue;seen.add(x);const q=byId(x);if(q)st.push(...q.deps)}
+  while(st.length){const x=st.pop();if(x===pid)return true;if(seen.has(x))continue;seen.add(x);const q=byId(x);if(q)st.push(...q.deps.map(d=>d.id))}
   return false;
 }
 
 // ---------- forecast engine ----------
-// Weekly simulation: roadmap capacity (dev-weeks per week) is handed out in priority order.
-// In-flight work goes first, then the backlog by rank. A project can't take capacity until all
-// its dependencies have finished, and never takes more than its max team size per week.
+// Weekly simulation: roadmap capacity (dev-weeks per week) is handed out in priority order:
+// in-flight work first, then committed projects, then everything else, each by rank.
+// "Start" means a project enters In Development; "finish" means it is released
+// (development done plus the UAT and release weeks set on the Capacity page).
+// Start-type dependencies hold a project back from taking capacity; finish-type dependencies
+// hold back its release. A project never takes more developers than its max team size.
+const UATW=()=>Math.max(0,+S.capacity.uatWeeks||0);
+const relW=f=>f.finish+1+UATW();
+function msWeek(F,qid,stage){ // week project qid reaches stage: -Infinity if already there, null if not yet known
+  const q=byId(qid); if(!q||SI(q.stage)>=SI(stage))return -Infinity;
+  const f=F[qid]; if(!f)return -Infinity;
+  if(SI(stage)<=SI('dev'))return f.start;
+  if(f.finish==null)return null;
+  return stage==='uat'?f.finish+1:f.finish+1+UATW();
+}
 function forecast(){
   const cap=S.capacity.devs*S.capacity.roadmapPct/100;
-  const open=S.projects.filter(p=>!DONE.has(p.stage));
   const rk=ranked();
   const order=[...rk.filter(p=>ACTIVE.has(p.stage)),...rk.filter(p=>!ACTIVE.has(p.stage))];
   const F={}; const used=[];
-  for(const p of order)F[p.id]={rem:Math.max(0,p.estimate*(1-(ACTIVE.has(p.stage)?p.progress:0)/100)),start:null,finish:null,noEst:!p.estimate};
-  const doneBy=(id,w)=>{const q=byId(id);if(!q||DONE.has(q.stage))return true;const f=F[id];return f&&f.finish!==null&&f.finish<w};
+  for(const p of order)F[p.id]={rem:Math.max(0,p.estimate*(1-(ACTIVE.has(p.stage)?p.progress:0)/100)),start:ACTIVE.has(p.stage)?0:null,done:null,finish:null,noEst:!p.estimate};
   const H=260;
   for(let w=0;w<H;w++){
     let left=cap;
     for(const p of order){
-      const f=F[p.id]; if(f.finish!==null)continue;
-      if(!p.deps.every(id=>doneBy(id,w)))continue;
-      if(f.rem<=1e-9){f.start??=w;f.finish=w;continue}
+      const f=F[p.id]; if(f.done!==null)continue;
+      if(f.start===null&&!p.deps.filter(d=>d.then==='start').every(d=>{const m=msWeek(F,d.id,d.on);return m!==null&&m<=w}))continue;
+      if(f.rem<=1e-9){f.start??=w;f.done=w;continue}
       if(left<=1e-9)continue;
       const a=Math.min(left,p.maxDevs||1,f.rem);
       f.start??=w; f.rem-=a; left-=a;
-      if(f.rem<=1e-9)f.finish=w;
+      if(f.rem<=1e-9)f.done=w;
     }
+    for(let changed=true;changed;){changed=false;
+      for(const p of order){const f=F[p.id];
+        if(f.done===null||f.finish!==null)continue;
+        if(p.deps.filter(d=>d.then==='finish').every(d=>{const m=msWeek(F,d.id,d.on);return m!==null&&w+1+UATW()>=m})){f.finish=w;changed=true}
+      }}
     used.push(cap-left);
     if(order.every(p=>F[p.id].finish!==null))break;
   }
   for(const p of order){const f=F[p.id];
     if(ACTIVE.has(p.stage))f.inflight=true;
-    const blockers=p.deps.map(byId).filter(q=>q&&!DONE.has(q.stage));
-    if(f.start!==null&&blockers.length){const lastDep=blockers.reduce((a,q)=>((F[q.id].finish??-1)>(F[a.id].finish??-1)?q:a));if(F[lastDep.id].finish===f.start-1)f.waitingOn=lastDep.id}
-    if(f.start===null)f.unsched=true;
+    if(f.start!==null&&!f.inflight){
+      for(const d of p.deps.filter(d=>d.then==='start')){const m=msWeek(F,d.id,d.on);if(m===f.start&&m>0)f.waitingOn=d}
+    }
+    if(f.done!==null&&f.finish!==null&&f.finish>f.done)f.heldBy=p.deps.find(d=>d.then==='finish');
+    if(f.start===null||f.finish===null)f.unsched=true;
   }
   return {F,used,cap};
 }
@@ -418,8 +500,8 @@ function vHome(){
   const open=S.projects.filter(p=>!DONE.has(p.stage));
   const counts=STAGES.map(s=>({s,n:S.projects.filter(p=>p.stage===s.id).length}));
   const pipeline=`<div class="pipeline">${counts.map(({s,n})=>`<a href="#board" style="--sc:var(--s-${s.id});--n:${Math.max(n,1)}"><b>${n}</b><span>${s.name}</span></a>`).join('')}</div>`;
-  const soon=open.filter(p=>F[p.id].finish!==null&&F[p.id].finish<=12).sort((a,b)=>F[a.id].finish-F[b.id].finish);
-  const shipList=soon.length?`<ul class="list">${soon.map(p=>`<li><div class="t">${plink(p)}<div>${stageChip(p.stage)}</div></div><div class="r"><span class="label">Forecast release</span><div class="num">${fmtW(F[p.id].finish+1)}</div></div></li>`).join('')}</ul>`:'<p class="empty">Nothing forecast to ship in the next 12 weeks.</p>';
+  const soon=open.filter(p=>F[p.id].finish!==null&&relW(F[p.id])<=12).sort((a,b)=>F[a.id].finish-F[b.id].finish);
+  const shipList=soon.length?`<ul class="list">${soon.map(p=>`<li><div class="t">${plink(p)}<div>${stageChip(p.stage)}</div></div><div class="r"><span class="label">Forecast release</span><div class="num">${fmtW(relW(F[p.id]))}</div></div></li>`).join('')}</ul>`:'<p class="empty">Nothing forecast to ship in the next 12 weeks.</p>';
   let rolePanel='';
   if(canEdit()){
     const items=[];
@@ -443,7 +525,7 @@ function vHome(){
     const dl=DELIVS.find(x=>x.id===key);
     const list=open.filter(p=>SI(p.stage)>=SI('dev')||(F[p.id].finish!==null&&F[p.id].finish<=16)).sort((a,b)=>(F[a.id].finish??999)-(F[b.id].finish??999));
     const title=role==='marketing'?'Upcoming launches':'Get ready for';
-    rolePanel=`<section class="panel"><header><h2>${title}</h2><span class="label">${dl.name}</span></header><div class="body">${list.length?`<ul class="list">${list.map(p=>{const x=p.deliverables[key];const st=delState(p,dl);return `<li><div class="t">${plink(p)}<div>Ships around ${F[p.id].finish!==null?fmtW(F[p.id].finish+1):'TBD'}${x.link?` · <a href="${esc(x.link)}" target="_blank" rel="noopener">Open doc</a>`:''}</div></div><div class="r"><span class="pill ${st==='done'?'ok':st==='late'?'bad':st==='prog'?'warn':'n'}">${DSTATUS.find(s=>s[0]===x.status)[1]}</span></div></li>`}).join('')}</ul>`:'<p class="empty">Nothing coming up yet.</p>'}</div></section>`;
+    rolePanel=`<section class="panel"><header><h2>${title}</h2><span class="label">${dl.name}</span></header><div class="body">${list.length?`<ul class="list">${list.map(p=>{const x=p.deliverables[key];const st=delState(p,dl);return `<li><div class="t">${plink(p)}<div>Ships around ${F[p.id].finish!==null?fmtW(relW(F[p.id])):'TBD'}${x.link?` · <a href="${esc(x.link)}" target="_blank" rel="noopener">Open doc</a>`:''}</div></div><div class="r"><span class="pill ${st==='done'?'ok':st==='late'?'bad':st==='prog'?'warn':'n'}">${DSTATUS.find(s=>s[0]===x.status)[1]}</span></div></li>`}).join('')}</ul>`:'<p class="empty">Nothing coming up yet.</p>'}</div></section>`;
   }
   const mine=S.alerts.filter(a=>a.roles.includes(role)).slice(0,6);
   const alertsPanel=`<section class="panel"><header><h2>Your alerts</h2><a href="#alerts">Manage</a></header><div class="body">${mine.length?`<ul class="list feed">${mine.map(alertLi).join('')}</ul>`:'<p class="empty">No alerts yet. Subscribe to stages on the Alerts page.</p>'}</div></section>`;
@@ -458,30 +540,45 @@ function vBacklog(){
   const mv=(p,dir,dis,label)=>`<button data-move="${p.id}" data-dir="${dir}" aria-label="${label}" title="${label}" ${dis?'disabled':''}><svg class="ico" viewBox="0 0 24 24"><path d="${dir<0?'m18 15-6-6-6 6':'m6 9 6 6 6-6'}"/></svg></button>`;
   const row=(p,i,sec,n,offset)=>{const f=F[p.id]||{};const open=sec!=='shipped';
     const start=!open?'<span class="muted">Done</span>':f.inflight?'<span class="muted">In flight</span>':f.unsched?'<span class="pill bad">Blocked</span>':fmtW(f.start);
-    const fin=!open?fmtD(([...p.history].reverse().find(h=>h.to==='released')||{}).date||new Date().toISOString().slice(0,10)):f.finish!=null?fmtW(f.finish+1):NONE;
+    const fin=!open?fmtD(([...p.history].reverse().find(h=>h.to==='released')||{}).date||new Date().toISOString().slice(0,10)):f.finish!=null?fmtW(relW(f)):NONE;
     const up=sec==='committed'?(i===0?[true,'Move up']:[false,'Move up']):(i===0?[false,'Move into committed']:[false,'Move up']);
     const down=sec==='committed'?(i===n-1?[ACTIVE.has(p.stage),'Move out of committed']:[false,'Move down']):[i===n-1,'Move down'];
-    return `<tr><td class="rank">${open&&ed?`<span class="moves">${mv(p,-1,up[0],up[1])}${mv(p,1,down[0],down[1])}</span>`:''}${open?offset+i+1:''}</td>
-    <td><a class="name" href="#project-${p.id}" data-open="${p.id}">${esc(p.name)}</a><div class="sub">${esc(p.owner)}${f.waitingOn?` · waits on ${esc(byId(f.waitingOn).name)}`:''}</div></td>
+    if(!bfMatch(p,f,sec))return '';
+    return `<tr><td class="rank">${open&&ed&&!bfActive()?`<span class="moves">${mv(p,-1,up[0],up[1])}${mv(p,1,down[0],down[1])}</span>`:''}${open?offset+i+1:''}</td>
+    <td><a class="name" href="#project-${p.id}" data-open="${p.id}">${esc(p.name)}</a><div class="sub">${esc(p.owner)}${f.waitingOn?` · waits for ${esc(byId(f.waitingOn.id).name)} to ${f.waitingOn.on==='dev'?'start':f.waitingOn.on==='released'?'ship':'reach '+SNAME(f.waitingOn.on)}`:''}</div></td>
     <td>${stageChip(p.stage)}</td>
     <td class="right num">${wk(p.budget)}</td>
     <td class="right num">${wk(p.estimate)}</td>
     <td>${budgetPill(p)}<div class="sub" style="white-space:nowrap">${spendLine(p)}</div></td>
-    <td><div class="deps">${p.deps.map(id=>`<span class="chip">${esc(byId(id)?.name||'?')}</span>`).join('')||'<span class="muted">None</span>'}</div></td>
+    <td><div class="deps">${p.deps.map(d=>`<span class="chip" title="${esc(depLong(d,p.name))}">${esc(byId(d.id)?.name||'?')} ${depTag(d)}</span>`).join('')||'<span class="muted">None</span>'}</div></td>
     <td class="num">${start}</td><td class="num">${fin}</td><td>${delDots(p)}</td></tr>`};
   const head=(t,d,n)=>`<tr class="section"><td colspan="10"><b>${t}</b> <span class="muted">· ${n} ${n===1?'project':'projects'}${d?' · '+d:''}</span></td></tr>`;
+  const sect=(key,t,d,list,offset,emptyMsg)=>{if(BF.sec!=='all'&&BF.sec!==key)return '';const rows=list.map((p,i)=>row(p,i,key,list.length,offset));const shown=rows.filter(Boolean).length;
+    if(bfActive()&&!shown)return '';return head(t,d,bfActive()?shown:list.length)+(rows.join('')||`<tr><td colspan="10" class="muted">${emptyMsg}</td></tr>`)};
+  const total=S.projects.length;
+  const shownCount=[...com.map(p=>bfMatch(p,F[p.id]||{},'committed')),...later.map(p=>bfMatch(p,F[p.id]||{},'later')),...shipped.map(p=>bfMatch(p,{},'shipped'))].filter(Boolean).length;
+  const sel=(id,key,label,opts,anyLabel)=>`<div class="f"><label for="${id}">${label}</label><select id="${id}" data-bf="${key}"><option value="">${anyLabel}</option>${opts.map(([v,l])=>`<option value="${v}" ${BF[key]===v?'selected':''}>${l}</option>`).join('')}</select></div>`;
+  const filterBar=`<div class="filters" role="search" aria-label="Filter the backlog">
+    <div class="f"><span class="label">Show</span><div class="seg">${[['all','All'],['committed','Committed'],['later','Everything else'],['shipped','Shipped']].map(([v,l])=>`<button data-bfsec="${v}" aria-pressed="${BF.sec===v}">${l}</button>`).join('')}</div></div>
+    ${sel('bf-stage','stage','Stage',STAGES.map(st=>[st.id,st.name]),'Any stage')}
+    ${sel('bf-start','start','Forecast start',START_OPTS,'Any time')}
+    ${sel('bf-rel','rel','Forecast release',REL_OPTS,'Any time')}
+    ${sel('bf-health','health','Budget health',HEALTH_OPTS,'Any')}
+    <div class="count">Showing ${shownCount} of ${total}${bfActive()?' <button class="btn sm ghost" data-act="clearbf">Clear filters</button>':''}</div>
+  </div>${bfActive()&&ed?'<p class="muted" style="font-size:12px;margin:-8px 0 12px">Re-ranking is off while filters are on. Clear filters to use the arrows.</p>':''}`;
   return viewHead('Backlog',ed?'Committed work is forecast first, then everything else in rank order. Use the arrows to re-rank or to move a project between sections.':'Committed work is forecast first, then everything else in rank order. Dates come from development capacity and dependencies.',ed?'<button class="btn primary" data-act="add"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add project</button>':'')+
-  `<div class="tablewrap"><table><thead><tr><th>#</th><th>Project</th><th>Stage</th><th class="right">Budget</th><th class="right">Estimate</th><th>Budget health</th><th>Depends on</th><th>Forecast start</th><th>Forecast release</th><th>Deliverables</th></tr></thead><tbody>
-  ${head('Committed','being built or planned for the near term',com.length)}${com.map((p,i)=>row(p,i,'committed',com.length,0)).join('')||'<tr><td colspan="10" class="muted">Nothing committed yet. Move a project up from everything else.</td></tr>'}
-  ${head('Everything else','ideas and future work',later.length)}${later.map((p,i)=>row(p,i,'later',later.length,com.length)).join('')}
-  ${head('Shipped','',shipped.length)}${shipped.map((p,i)=>row(p,i,'shipped',shipped.length,0)).join('')}</tbody></table></div>
+  filterBar+`<div class="tablewrap"><table><thead><tr><th>#</th><th>Project</th><th>Stage</th><th class="right">Budget</th><th class="right">Estimate</th><th>Budget health</th><th>Depends on</th><th>Forecast start</th><th>Forecast release</th><th>Deliverables</th></tr></thead><tbody>
+  ${sect('committed','Committed','being built or planned for the near term',com,0,'Nothing committed yet. Move a project up from everything else.')}
+  ${sect('later','Everything else','ideas and future work',later,com.length,'Nothing here yet. Add a project to start.')}
+  ${sect('shipped','Shipped','',shipped,0,'Nothing shipped yet.')}
+  ${shownCount?'':'<tr><td colspan="10"><p class="empty">No projects match these filters. <button class="btn sm ghost" data-act="clearbf">Clear filters</button></p></td></tr>'}</tbody></table></div>
   <div class="legend"><span>Budget and estimate are in developer weeks. Budget health compares actual spend to budget.</span><span>Deliverables, in order: ${DELIVS.map(x=>x.name).join(', ')}.</span><span><span class="dots"><i class="done"></i></span> Done</span><span><span class="dots"><i class="prog"></i></span> In progress</span><span><span class="dots"><i class="late"></i></span> Overdue for this stage</span></div>`;
 }
 
 function vBoard(){
   const {F}=forecast(); const ed=canEdit();
   return viewHead('Stages',ed?'Drag a card to another column to move its stage. Subscribers get an alert.':'Where every project sits today.')+
-  `<div class="board">${STAGES.map(s=>{const ps=S.projects.filter(p=>p.stage===s.id);return `<div class="col" data-col="${s.id}" style="--sc:var(--s-${s.id})"><h3>${s.name}<span>${ps.length}</span></h3>${ps.map(p=>{const f=F[p.id];return `<div class="card" data-open="${p.id}" ${ed?`draggable="true" data-drag="${p.id}"`:''} tabindex="0"><div class="t">${esc(p.name)}</div><div class="m"><span>${esc(p.owner)}</span>${delDots(p)}</div><div class="m"><span class="num">${p.estimate?+p.estimate+' wk est':'No estimate'} · ${p.budget?+p.budget+' wk budget':'no budget'}</span><span class="num">${f&&f.finish!=null?'Ships '+fmtW(f.finish+1):''}</span></div></div>`}).join('')}</div>`}).join('')}</div>`;
+  `<div class="board">${STAGES.map(s=>{const ps=S.projects.filter(p=>p.stage===s.id);return `<div class="col" data-col="${s.id}" style="--sc:var(--s-${s.id})"><h3>${s.name}<span>${ps.length}</span></h3>${ps.map(p=>{const f=F[p.id];return `<div class="card" data-open="${p.id}" ${ed?`draggable="true" data-drag="${p.id}"`:''} tabindex="0"><div class="t">${esc(p.name)}</div><div class="m"><span>${esc(p.owner)}</span>${delDots(p)}</div><div class="m"><span class="num">${p.estimate?+p.estimate+' wk est':'No estimate'} · ${p.budget?+p.budget+' wk budget':'no budget'}</span><span class="num">${f&&f.finish!=null?'Ships '+fmtW(relW(f)):''}</span></div></div>`}).join('')}</div>`}).join('')}</div>`;
 }
 
 function vTimeline(){
@@ -498,18 +595,18 @@ function vTimeline(){
   const idx={};open.forEach((p,i)=>idx[p.id]=i);
   let links='';
   open.forEach((p,i)=>{const f=F[p.id];if(f.start==null)return;
-    p.deps.forEach(did=>{const df=F[did];if(!df||df.finish==null||idx[did]==null)return;
-      const x1=(df.finish+1)*W, y1=HH+idx[did]*RH+RH/2, x2=f.start*W, y2=HH+i*RH+RH/2, mx=Math.max(x1+6,x2-6);
-      links+=`<path d="M${x1} ${y1} H${mx} V${y2} H${x2}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3"/><circle cx="${x2}" cy="${y2}" r="2.5" fill="var(--muted)"/>`;
+    p.deps.forEach(d=>{if(idx[d.id]==null)return;const m=msWeek(F,d.id,d.on);if(m===null||m===-Infinity||f.finish==null)return;
+      const x1=m*W, y1=HH+idx[d.id]*RH+RH/2, x2=(d.then==='start'?f.start:relW(f))*W, y2=HH+i*RH+RH/2, mx=d.then==='start'?Math.max(x1+6,x2-6):x2+8;
+      links+=`<path d="M${x1} ${y1} H${mx} V${y2} H${x2}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3"/><circle cx="${x1}" cy="${y1}" r="2" fill="var(--muted)"/><circle cx="${x2}" cy="${y2}" r="3" fill="var(--accent)"/>`;
     })});
   const rows=open.map((p,i)=>{const f=F[p.id];
-    const bar=f.start==null?`<div class="bar-after" style="left:8px">Can't be scheduled: ${p.estimate?'check dependencies':'needs an estimate'}</div>`:
-      `<div class="bar ${f.inflight?'inprog':''}" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${f.start*W}px;width:${Math.max(1,f.finish-f.start+1)*W-2}px" title="${esc(p.name)}: ${fmtW(f.start)} to ${fmtW(f.finish+1)}">${(f.finish-f.start+1)*W>110?esc(SNAME(p.stage)):''}</div><div class="bar-after" style="left:${(f.finish+1)*W+6}px">${fmtW(f.finish+1)}</div>`;
+    const bar=f.start==null?`<div class="bar-after" style="left:8px">Can't be scheduled: ${p.estimate?'check its dependencies':'needs an estimate'}</div>`:
+      `<div class="bar ${f.inflight?'inprog':''}" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${f.start*W}px;width:${Math.max(1,f.finish-f.start+1)*W-2}px" title="${esc(p.name)}: development ${fmtW(f.start)} to ${fmtW(f.finish+1)}">${(f.finish-f.start+1)*W>110?esc(SNAME(p.stage)):''}</div>${relW(f)>f.finish+1?`<div class="bar uat" style="--sc:var(--s-uat);left:${(f.finish+1)*W}px;width:${(relW(f)-f.finish-1)*W-2}px" title="UAT and release"></div>`:''}<div class="bar-after" style="left:${relW(f)*W+6}px">${fmtW(relW(f))}</div>`;
     return `<div class="tl-row"><div class="tl-name"><span class="rk">${i+1}</span>${plink(p)}</div><div class="tl-track" style="width:${N*W+120}px">${grid}${bar}</div></div>`}).join('');
-  return viewHead('Timeline','Forecast build windows from capacity, priority and dependencies. Striped bars are already in progress. Dotted lines show dependencies.')+
+  return viewHead('Timeline','Solid bars are development, pale bars are UAT and release, and striped bars are already in progress. Dotted lines run from the point a dependency is met to where the next project can start or finish.')+
    `<div class="tl"><div class="tl-inner"><div class="tl-row head"><div class="tl-name"><span class="label">Project</span></div><div class="tl-track" style="width:${N*W+120}px">${months}</div></div>${rows}
-   <svg class="links" style="left:220px;width:${N*W}px;height:${HH+open.length*RH}px">${links}</svg>
-   <div class="tl-today" style="left:220px;top:0;height:${HH+open.length*RH}px" title="This week"></div></div></div>
+   <svg class="links" style="left:var(--namew);width:${N*W}px;height:${HH+open.length*RH}px">${links}</svg>
+   <div class="tl-today" style="left:var(--namew);top:0;height:${HH+open.length*RH}px" title="This week"></div></div></div>
    <div class="legend">${STAGES.filter(s=>!DONE.has(s.id)).map(s=>`<span>${stageChip(s.id)}</span>`).join('')}<span><span style="display:inline-block;width:2px;height:12px;background:var(--bad);vertical-align:middle"></span> This week</span></div>`;
 }
 
@@ -523,6 +620,7 @@ function vCapacity(){
   `<div class="capgrid"><section class="panel"><header><h2>Inputs</h2></header><div class="body">
     <div class="field"><label for="c-devs">Developers</label><input id="c-devs" type="number" min="0" step="1" value="${c.devs}" data-cap="devs" ${dis}><span class="hint">Full-time engineers on the team.</span></div>
     <div class="field"><label for="c-pct">Share on roadmap work (%)</label><input id="c-pct" type="number" min="0" max="100" step="5" value="${c.roadmapPct}" data-cap="roadmapPct" ${dis}><span class="hint">The rest goes to maintenance, bugs and support.</span></div>
+    <div class="field"><label for="c-uat">UAT and release time (weeks)</label><input id="c-uat" type="number" min="0" step="1" value="${c.uatWeeks??1}" data-cap="uatWeeks" ${dis}><span class="hint">Time between development finishing and release. Used for release dates and stage-gate dependencies.</span></div>
     <span class="label">Roadmap capacity</span><div class="big">${cap.toFixed(1)} <span class="muted" style="font-size:1rem">dev-weeks / week</span></div>
   </div></section>
   <section class="panel"><header><h2>Capacity used, week by week</h2><span class="muted">${N} weeks</span></header><div class="body">
@@ -530,7 +628,7 @@ function vCapacity(){
     <div class="utilx"><span>${fmtW(0)}</span><span>${fmtW(Math.floor(N/2))}</span><span>${fmtW(N-1)}</span></div>
     <p class="muted" style="margin-top:12px">${firstFree<0?'The team is fully booked for the whole forecast.':`The team is fully booked until <b>${fmtW(firstFree)}</b>. After that, capacity opens up for the next project in the backlog.`} Pale bars mean spare capacity, usually because the next projects are waiting on dependencies or have hit their team size limit.</p>
     <span class="label">How the forecast works</span>
-    <p class="muted" style="margin:4px 0 0">Each week, roadmap capacity goes first to projects already in development or UAT, then to the backlog in rank order. A project can't start until everything it depends on has shipped, and never takes more developers than its max team size.</p>
+    <p class="muted" style="margin:4px 0 0">Each week, roadmap capacity goes first to projects already in development or UAT, then to the backlog in rank order. Dependencies can hold back a project's start or its release: finish to start, start to start, finish to finish, start to finish, or a stage gate such as "can't start until project A reaches UAT". A project never takes more developers than its max team size.</p>
   </div></section></div>`;
 }
 
@@ -549,9 +647,13 @@ function drawer(){
   if(!p){dr.hidden=true;sc.hidden=true;return}
   const ed=canEdit(); const {F}=forecast(); const f=F[p.id]||{};
   const dis=ed?'':'disabled';
-  const others=S.projects.filter(q=>q.id!==p.id&&!p.deps.includes(q.id)&&!wouldCycle(p.id,q.id));
-  const unblocks=S.projects.filter(q=>q.deps.includes(p.id));
-  const fc=DONE.has(p.stage)?'Shipped':f.unsched?'Can\'t be scheduled':f.inflight?`In flight · ships ${fmtW(f.finish+1)}`:`${fmtW(f.start)} to ${fmtW(f.finish+1)}`;
+  const others=S.projects.filter(q=>q.id!==p.id&&!wouldCycle(p.id,q.id));
+  const unblocks=S.projects.flatMap(q=>q.deps.filter(d=>d.id===p.id).map(d=>[q,d]));
+  if(depDraft.pid!==p.id)depDraft={pid:p.id,type:'FS',id:'',then:'start',on:'uat'};
+  const dt=DEP_TYPES.find(t=>t.id===depDraft.type);
+  const draft={id:+depDraft.id,on:dt.on||depDraft.on,then:dt.then||depDraft.then};
+  const dupe=p.deps.some(d=>d.id===draft.id&&d.on===draft.on&&d.then===draft.then);
+  const fc=DONE.has(p.stage)?'Shipped':f.unsched?'Can\'t be scheduled':f.heldBy?`${fmtW(f.start)} to ${fmtW(relW(f))} (release held by a dependency)`:f.inflight?`In flight · ships ${fmtW(relW(f))}`:`${fmtW(f.start)} to ${fmtW(relW(f))}`;
   const fact=(label,val,input)=>`<div><span class="label">${label}</span><div class="v">${ed&&input?input:val}</div></div>`;
   dr.innerHTML=`<div class="dh"><div style="min-width:0;flex:1">
       ${ed?`<input type="text" id="p-name" data-f="name" value="${esc(p.name)}" class="p-name" aria-label="Project name">`:`<h2>${esc(p.name)}</h2>`}
@@ -571,15 +673,20 @@ function drawer(){
         ${ACTIVE.has(p.stage)?fact('Dev progress',`<span class="num">${p.progress}%</span>`,`<input type="number" id="p-prog" data-f="progress" min="0" max="100" step="5" value="${p.progress}">`):''}
       </div></section>
       <section><span class="label">Summary</span>${ed?`<textarea id="p-sum" data-f="summary" rows="3" style="margin-top:6px">${esc(p.summary)}</textarea>`:`<p style="margin:4px 0 0">${esc(p.summary)||'<span class="muted">No summary yet.</span>'}</p>`}</section>
-      <section class="panel"><header><h3>Dependencies</h3></header><div class="body" style="display:grid;gap:10px">
-        <div><span class="label">Can't start until these ship</span><div class="deps" style="margin-top:6px">${p.deps.map(id=>{const q=byId(id);return `<span class="chip">${q?`<a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a>`:'?'} ${q?stageChip(q.stage):''} ${ed?`<button class="btn sm ghost" data-undep="${id}" aria-label="Remove dependency">×</button>`:''}</span>`}).join('')||'<span class="muted">None</span>'}</div>
-        ${ed?`<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><select id="p-adddep" aria-label="Add dependency"><option value="">Add a dependency…</option>${others.map(q=>`<option value="${q.id}">${esc(q.name)}</option>`).join('')}</select></div>`:''}</div>
-        <div><span class="label">Blocks</span><div class="deps" style="margin-top:6px">${unblocks.map(q=>`<span class="chip"><a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a></span>`).join('')||'<span class="muted">Nothing</span>'}</div></div>
+      <section class="panel"><header><h3>Dependencies</h3><span class="muted" style="font-size:12px">Start means entering In Development. Finish means released.</span></header><div class="body" style="display:grid;gap:16px">
+        <div><span class="label">This project waits on</span>${p.deps.length?`<ul class="deprows">${p.deps.map((d,i)=>{const q=byId(d.id);return `<li><span>Can't <b>${d.then}</b> until ${q?`<a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a>`:'?'} ${onText(d.on)} ${depTag(d)}${q?' '+stageChip(q.stage):''}</span>${ed?`<button class="btn sm ghost" data-undep="${i}" aria-label="Remove dependency">Remove</button>`:''}</li>`}).join('')}</ul>`:'<p class="empty">Nothing. This project can start whenever capacity allows.</p>'}
+        ${ed?`<div class="depform"><span class="label">Add a dependency</span>
+          <div class="row"><label for="dep-type" class="muted">Type</label><select id="dep-type" data-dep="type">${DEP_TYPES.map(t=>`<option value="${t.id}" ${t.id===depDraft.type?'selected':''}>${t.name}${t.id==='gate'?'':' ('+t.id+')'}</option>`).join('')}</select>
+          <label for="dep-proj" class="muted">Project</label><select id="dep-proj" data-dep="id"><option value="">Choose a project…</option>${others.map(q=>`<option value="${q.id}" ${String(q.id)===String(depDraft.id)?'selected':''}>${esc(q.name)}</option>`).join('')}</select></div>
+          ${depDraft.type==='gate'?`<div class="row">This project can't <select id="dep-then" data-dep="then" aria-label="Start or finish"><option value="start" ${depDraft.then==='start'?'selected':''}>start</option><option value="finish" ${depDraft.then==='finish'?'selected':''}>finish</option></select> until it reaches <select id="dep-on" data-dep="on" aria-label="Stage">${GATE_STAGES.map(st=>`<option value="${st}" ${st===depDraft.on?'selected':''}>${SNAME(st)}</option>`).join('')}</select></div>`:''}
+          <div class="row"><button class="btn primary sm" data-act="adddep" ${!depDraft.id||dupe?'disabled':''}>Add dependency</button><span class="preview">${depDraft.id?(dupe?'This dependency already exists.':depLong(draft)+'.'):'Pick a project to see how the rule reads.'}</span></div>
+        </div>`:''}</div>
+        <div><span class="label">Projects waiting on this one</span>${unblocks.length?`<ul class="deprows">${unblocks.map(([q,d])=>`<li><span><a href="#project-${q.id}" data-open="${q.id}">${esc(q.name)}</a> can't ${d.then} until this project ${onText(d.on)} ${depTag(d)}</span></li>`).join('')}</ul>`:'<p class="empty">None.</p>'}</div>
       </div></section>
       <section class="panel"><header><h3>Deliverables by team</h3></header><div class="body" style="overflow-x:auto"><table class="dtable"><thead><tr><th>Deliverable</th><th>Team</th><th>Needed</th><th>Status</th><th>Link</th></tr></thead><tbody>
         ${DELIVS.map(dl=>{const x=p.deliverables[dl.id];const st=delState(p,dl);return `<tr><td><b>${dl.name}</b>${st==='late'?' <span class="pill bad">Overdue</span>':''}</td><td class="muted">${dl.team}</td><td class="muted" style="font-size:.8rem">${dl.when}</td>
         <td>${ed?`<select id="d-${dl.id}-s" data-dl="${dl.id}" data-k="status">${DSTATUS.map(([v,l])=>`<option value="${v}" ${x.status===v?'selected':''}>${l}</option>`).join('')}</select>`:`<span class="pill ${st==='done'?'ok':st==='late'?'bad':st==='prog'?'warn':'n'}">${DSTATUS.find(s=>s[0]===x.status)[1]}</span>`}</td>
-        <td>${ed?`<input type="url" id="d-${dl.id}-l" data-dl="${dl.id}" data-k="link" placeholder="https://" value="${esc(x.link)}">`:x.link?`<a href="${esc(x.link)}" target="_blank" rel="noopener">Open</a>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}
+        <td>${ed?`<input type="url" id="d-${dl.id}-l" data-dl="${dl.id}" data-k="link" placeholder="https://" value="${esc(x.link)}">`:x.link?`<a class="linktext" href="${esc(x.link)}" target="_blank" rel="noopener" title="${esc(x.link)}">${esc(x.link.replace(/^https?:\/\//,''))}</a>`:'<span class="muted">None</span>'}</td></tr>`}).join('')}
       </tbody></table></div></section>
       <section class="panel"><header><h3>Stage history</h3></header><div class="body"><ul class="list hist">${[...p.history].reverse().map(h=>`<li><span>Entered ${stageChip(h.to)}${h.by?` <span class="muted">by ${esc(h.by)}</span>`:''}</span><span class="when num muted">${fmtD(h.date)}</span></li>`).join('')||'<li class="muted">Still in Intake.</li>'}</ul></div></section>
       ${ed?`<div><button class="btn danger" data-act="delete">${confirmDel===p.id?'Delete this project? Click again to confirm':'Delete project'}</button></div>`:''}
@@ -620,22 +727,26 @@ document.addEventListener('click',e=>{
     else return;
     S.projects=[...L,...S.projects.filter(x=>DONE.has(x.stage))];save();render();return}
   const st=t.closest('[data-stage-to]'); if(st){setStage(byId(openId),st.dataset.stageTo);return}
-  const ud=t.closest('[data-undep]'); if(ud&&canEdit()){const p=byId(openId);p.deps=p.deps.filter(x=>x!==+ud.dataset.undep);save();render();return}
+  const ud=t.closest('[data-undep]'); if(ud&&canEdit()){const p=byId(openId);p.deps.splice(+ud.dataset.undep,1);save();render();toast('Dependency removed.');return}
   const act=t.closest('[data-act]')?.dataset.act;
   if(act==='close'||t.id==='scrim'){closeDrawer();return}
+  const bs=t.closest('[data-bfsec]'); if(bs){BF.sec=bs.dataset.bfsec;saveBF();render();return}
+  if(act==='clearbf'){BF={...BF0};saveBF();render();return}
+  if(act==='adddep'&&canEdit()){const p=byId(openId);const dt=DEP_TYPES.find(x=>x.id===depDraft.type);const d={id:+depDraft.id,on:dt.on||depDraft.on,then:dt.then||depDraft.then};if(!d.id||wouldCycle(p.id,d.id))return;if(!p.deps.some(x=>x.id===d.id&&x.on===d.on&&x.then===d.then))p.deps.push(d);depDraft.id='';save();render();toast('Dependency added. Forecasts updated.');return}
   if(act==='add'&&canEdit()){const id=S.nextId++;S.projects.push({id,name:'New project',stage:'intake',progress:0,owner:'Unassigned',budget:0,estimate:0,maxDevs:3,deps:[],summary:'',history:[],deliverables:del()});save();openId=id;history.replaceState(null,'','#project-'+id);render();setTimeout(()=>document.getElementById('p-name')?.select(),0);return}
-  if(act==='delete'&&canEdit()){if(confirmDel!==openId){confirmDel=openId;drawer();return}const id=openId;S.projects=S.projects.filter(p=>p.id!==id);S.projects.forEach(p=>p.deps=p.deps.filter(x=>x!==id));S.alerts=S.alerts.filter(a=>a.pid!==id);save();closeDrawer();render();toast('Project deleted.');return}
+  if(act==='delete'&&canEdit()){if(confirmDel!==openId){confirmDel=openId;drawer();return}const id=openId;S.projects=S.projects.filter(p=>p.id!==id);S.projects.forEach(p=>p.deps=p.deps.filter(x=>x.id!==id));S.alerts=S.alerts.filter(a=>a.pid!==id);save();closeDrawer();render();toast('Project deleted.');return}
   if(act==='reset'){S=seed();save();openId=null;render();toast('Sample data restored.');return}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openId)closeDrawer();if(e.key==='Enter'&&e.target.matches('.card[data-open]'))e.target.click()});
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='role'){role=t.value;try{localStorage.setItem(KEY+'-role',role)}catch(_){};const h=R().home;if(!openId){view=h;history.replaceState(null,'','#'+view)}render();toast(`Now viewing as ${R().name}.`);return}
+  if(t.dataset.bf){BF[t.dataset.bf]=t.value;saveBF();render();document.getElementById(t.id)?.focus();return}
   if(!canEdit()&&!t.dataset.sub)return;
   const p=openId&&byId(openId);
   if(t.dataset.f==='committed'&&p){p.committed=t.value==='1';S.projects.splice(S.projects.indexOf(p),1);p.committed?S.projects.push(p):S.projects.unshift(p);S.projects=[...committedList(),...laterList(),...S.projects.filter(x=>DONE.has(x.stage))];save();render();return}
   if(t.dataset.f&&p){const k=t.dataset.f;let v=t.value;if(t.type==='number'){v=Math.max(0,+v||0);if(k==='progress')v=Math.min(100,v);if(k==='maxDevs')v=Math.max(1,v);if(k==='spent'||k==='budget'||k==='estimate')v=Math.round(v*2)/2}p[k]=v;save();render();return}
-  if(t.id==='p-adddep'&&p&&t.value){const id=+t.value;if(!wouldCycle(p.id,id)){p.deps.push(id);save();render()}return}
+  if(t.dataset.dep&&p){depDraft[t.dataset.dep]=t.value;drawer();document.getElementById(t.id)?.focus();return}
   if(t.dataset.dl&&p){p.deliverables[t.dataset.dl][t.dataset.k]=t.value;save();render();return}
   if(t.dataset.cap){let v=Math.max(0,+t.value||0);if(t.dataset.cap==='roadmapPct')v=Math.min(100,v);S.capacity[t.dataset.cap]=v;save();render();setTimeout(()=>document.getElementById(t.id)?.focus(),0);return}
   if(t.dataset.sub){const r=t.dataset.sub;if(!(canEdit()||r===role))return;const set=new Set(S.subs[r]||[]);t.checked?set.add(t.dataset.stage):set.delete(t.dataset.stage);S.subs[r]=[...set];save();toast('Alert preferences saved.');return}
