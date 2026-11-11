@@ -287,6 +287,9 @@ input[type=date]{background:var(--surface);border:1px solid var(--line);border-r
 .sw-track{position:relative;flex:1;height:100%}
 .sw-dot{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:3px;border:2px solid var(--surface);background:var(--muted);box-sizing:content-box}
 .sw-dot.done{background:var(--ok)} .sw-dot.prog{background:var(--warn)} .sw-dot.todo{background:var(--sunk);border-color:var(--muted)} .sw-dot.blocked{background:var(--warn);border-color:var(--bad)} .sw-dot.late{background:var(--bad)}
+.sw-dot:hover,.sw-dot:focus-visible{transform:scale(1.35);z-index:3;cursor:default;outline:none}
+#tip{position:fixed;z-index:70;pointer-events:none;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;font-size:12px;line-height:16px;max-width:260px;display:grid;gap:2px}
+#tip b{font-size:14px;line-height:20px}#tip .m{color:var(--muted)}
 .sw-key{position:static;display:inline-block;margin:0;vertical-align:middle}
 .sw-axis{border-top:1px solid var(--line);height:24px}
 .sw-tick{position:absolute;top:4px;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
@@ -333,7 +336,7 @@ footer.dev-footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content
 <footer class="dev-footer"><div class="wrap"><span class="dev-byline">Roadmap by <b>Dev</b></span><span>Prototype with fictional sample data. Your edits are saved in this browser only. <button class="btn sm ghost" data-act="reset">Reset sample data</button></span></div></footer>
 <div id="scrim" hidden></div>
 <aside id="drawer" hidden aria-label="Project details"></aside>
-<div id="toast" hidden role="status"></div>
+<div id="toast" hidden role="status"></div><div id="tip" hidden></div>
 
 <script>
 // ---------- reference data ----------
@@ -777,6 +780,12 @@ function vTimeline(){
    <div class="legend">${STAGES.filter(s=>!DONE.has(s.id)).map(s=>`<span>${stageChip(s.id)}</span>`).join('')}<span><span style="display:inline-block;width:2px;height:12px;background:var(--bad);vertical-align:middle"></span> This week</span></div>`;
 }
 function tlToday(smooth){const el=document.getElementById('tl');const t=el&&el.querySelector('.tl-today');if(!t)return;const nw=parseFloat(getComputedStyle(el).getPropertyValue('--namew'))||224;el.scrollTo({left:Math.max(0,t.offsetLeft-nw-240),behavior:smooth?'smooth':'auto'})}
+function showTip(el){const t=document.getElementById('tip');t.innerHTML=`<b>${el.dataset.tipT}</b><span>${el.dataset.tipD}</span><span>Responsible: ${el.dataset.tipO}</span><span class="m">${el.dataset.tipS}</span>`;t.hidden=false;
+  const r=el.getBoundingClientRect(),w=t.offsetWidth,h=t.offsetHeight;let x=r.left+r.width/2-w/2;x=Math.max(8,Math.min(innerWidth-w-8,x));let y=r.top-h-8;if(y<8)y=r.bottom+8;t.style.left=x+'px';t.style.top=y+'px'}
+function hideTip(){const t=document.getElementById('tip');if(t)t.hidden=true}
+document.addEventListener('mouseover',e=>{const d=e.target.closest?.('[data-tip-t]');d?showTip(d):hideTip()});
+document.addEventListener('focusin',e=>{const d=e.target.closest?.('[data-tip-t]');d?showTip(d):hideTip()});
+document.addEventListener('scroll',hideTip,true);
 let tlPan=null;
 document.addEventListener('mousedown',e=>{const el=e.target.closest?.('#tl');if(!el||e.button!==1)return;e.preventDefault();tlPan={el,x:e.clientX,y:e.clientY,sl:el.scrollLeft,sy:window.scrollY};el.classList.add('panning')});
 document.addEventListener('mousemove',e=>{if(!tlPan)return;tlPan.el.scrollLeft=tlPan.sl-(e.clientX-tlPan.x);window.scrollTo(window.scrollX,tlPan.sy-(e.clientY-tlPan.y))});
@@ -914,7 +923,7 @@ function vRelease(){
   const todayOff=daysBetween(parseD(r.date),today0);
   const teams=REL_TEAMS.filter(t=>r.activities.some(a=>a.team===t));
   const swim=`<section class="panel"><header><h2>Release runway</h2><span class="muted">Every activity, by team, against the release date</span></header><div class="body"><div class="swim">
-    ${teams.map(t=>`<div class="sw-row ${t===myTeam?'mine':''}"><span class="sw-name">${t}</span><div class="sw-track">${r.activities.filter(a=>a.team===t).map(a=>`<i class="sw-dot ${actLate(r,a)?'late':a.status}" style="left:${pos(a.off)}%" title="${esc(a.name)}: ${fmtD(actDue(r,a))}, ${ACT_STATUS.find(s=>s[0]===a.status)[1]}"></i>`).join('')}</div></div>`).join('')}
+    ${teams.map(t=>`<div class="sw-row ${t===myTeam?'mine':''}"><span class="sw-name">${t}</span><div class="sw-track">${r.activities.filter(a=>a.team===t).map(a=>`<i class="sw-dot ${actLate(r,a)?'late':a.status}" style="left:${pos(a.off)}%" tabindex="0" role="img" aria-label="${esc(a.name)}, due ${fmtD(actDue(r,a))}, ${esc(a.owner||'no owner')}" data-tip-t="${esc(a.name)}" data-tip-d="Due ${fmtD(actDue(r,a))}${actLate(r,a)?' (overdue)':''}" data-tip-o="${esc(a.owner||'No owner yet')}" data-tip-s="${ACT_STATUS.find(s=>s[0]===a.status)[1]}"></i>`).join('')}</div></div>`).join('')}
     <div class="sw-row sw-axis"><span class="sw-name"></span><div class="sw-track">${[-42,-28,-14,0].filter(o=>o>=minO).map(o=>`<span class="sw-tick" style="left:${pos(o)}%">${o===0?'Release':o/7+' wk'}</span>`).join('')}</div></div>
     <div class="sw-line rel" style="left:calc(var(--swn) + (100% - var(--swn)) * ${pos(0)/100})"></div>
     ${todayOff>=minO&&todayOff<=maxO?`<div class="sw-line today" style="left:calc(var(--swn) + (100% - var(--swn)) * ${pos(todayOff)/100})" title="Today"></div>`:''}
