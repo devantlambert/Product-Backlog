@@ -6,6 +6,8 @@ A single place to manage the product backlog and share the state of every projec
 
 - **Backlog:** two ranked sections, Committed (being built or planned for the near term) and Everything else. Budget and estimate are in developer weeks, and budget health compares actual spend to budget.
 - **Stages:** Intake → Discovery → Ready for Dev → In Development → UAT → Released → Post-release Review.
+- **Releases:** bundle finished projects into planned releases (for example end of Q4). Each release has a date, readiness tracking, projects flagged when they will be ready late, a runway of team activities (product, development, QA, documentation, marketing, support, customer success, release management) and team updates.
+- **Ranking:** drag and drop rows to re-rank or move projects between Committed and Everything else.
 - **Dependencies:** finish to start, start to start, finish to finish, start to finish, or a stage gate (for example, B can't start until A reaches UAT).
 - **Backlog filters:** by section, stage, forecast start, forecast release and budget health.
 - **Capacity forecast:** a weekly simulation hands roadmap capacity to in-flight work first, then to the backlog in rank order. It respects dependencies and each project's maximum team size, and produces forecast start and release dates.

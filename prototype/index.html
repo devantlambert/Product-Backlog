@@ -112,12 +112,14 @@ main{padding-block:32px 64px}
 
 /* table (one step tighter) */
 .tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-table{border-collapse:collapse;width:100%;min-width:1040px;font-size:14px;line-height:20px}
+table{border-collapse:collapse;width:100%;min-width:1360px;font-size:14px;line-height:20px}
 th,td{text-align:left;padding:8px 12px;border-top:1px solid var(--line);vertical-align:middle}
 thead th{border-top:0;font-size:12px;line-height:16px;color:var(--muted);font-weight:600;background:var(--sunk);white-space:nowrap}
 tbody tr:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
 td.rank{width:64px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 td .name{font-weight:600;color:var(--fg);text-decoration:none}
+.tablewrap td:nth-child(2){min-width:220px}
+.tablewrap td:nth-child(7){min-width:180px}
 td .name:hover{color:var(--accent);text-decoration:underline}
 td .sub{font-size:12px;line-height:16px;color:var(--muted)}
 .right{text-align:right}
@@ -238,6 +240,69 @@ tr.section td{background:var(--sunk);font-size:12px;line-height:16px;font-weight
 .close:hover{border-color:var(--muted)}
 .p-name{font-weight:600;font-size:20px!important;width:100%}
 
+.grip{border:0;background:none;cursor:grab;color:var(--muted);padding:2px;border-radius:var(--r-sm);line-height:0;vertical-align:middle}
+.grip:hover{color:var(--accent);background:var(--sunk)}
+.grip .ico{width:16px;height:16px}
+tr[draggable="true"]{cursor:grab}
+tr.dragging{opacity:.4}
+tr.drop-before td{box-shadow:inset 0 3px 0 var(--accent)}
+tr.drop-after td{box-shadow:inset 0 -3px 0 var(--accent)}
+tr.section.drop-into td{box-shadow:inset 0 0 0 2px var(--accent)}
+td.rank .pick{width:16px;height:16px;accent-color:var(--accent);vertical-align:middle;margin-right:4px}
+.bulkbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 12px;margin-bottom:12px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--r);font-size:14px}
+.pbar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin:6px 0 4px;border:1px solid var(--line)}
+.pbar i{display:block;height:100%;background:var(--accent)}
+.relcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px}
+.relcard{display:grid;gap:10px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;text-decoration:none;color:var(--fg)}
+.relcard:hover{border-color:var(--accent)}
+.rc-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.rc-date{display:flex;gap:12px;align-items:baseline;font-size:14px}
+.rc-theme{margin:0;font-size:14px;line-height:20px}
+.rc-chips{display:flex;flex-wrap:wrap;gap:4px}
+.rc-stats{display:grid;gap:8px;font-size:12px}
+.rc-flags{display:flex;flex-wrap:wrap;gap:4px}
+.relhead-ctl{display:flex;gap:12px;flex-wrap:wrap}
+.relhead-ctl .f{display:grid;gap:4px}
+.relhead-ctl label{font-size:12px;font-weight:600;color:var(--muted)}
+input[type=date]{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 10px;min-height:40px;font-size:14px}
+.relkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;padding:16px;margin-bottom:24px}
+.relkpis > div{display:grid;gap:2px;align-content:start;justify-items:start;font-size:12px}
+.relkpis .pbar{width:100%}
+.relkpis b{font-size:20px;line-height:28px}
+.reltable{width:100%;min-width:760px;font-size:14px}
+.reltable th{background:var(--sunk)}
+.swim{position:relative;--swn:150px;margin-top:4px}
+.sw-row{display:flex;align-items:center;height:30px;border-top:1px solid var(--line)}
+.sw-row.mine{background:var(--accent-soft)}
+.sw-name{flex:none;width:var(--swn);font-size:12px;font-weight:600;color:var(--muted);padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw-row.mine .sw-name{color:var(--accent)}
+.sw-track{position:relative;flex:1;height:100%}
+.sw-dot{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:3px;border:2px solid var(--surface);background:var(--muted);box-sizing:content-box}
+.sw-dot.done{background:var(--ok)} .sw-dot.prog{background:var(--warn)} .sw-dot.todo{background:var(--sunk);border-color:var(--muted)} .sw-dot.blocked{background:var(--warn);border-color:var(--bad)} .sw-dot.late{background:var(--bad)}
+.sw-key{position:static;display:inline-block;margin:0;vertical-align:middle}
+.sw-axis{border-top:1px solid var(--line);height:24px}
+.sw-tick{position:absolute;top:4px;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.sw-line{position:absolute;top:0;bottom:24px;width:2px;transform:translateX(-1px)}
+.sw-line.rel{background:var(--accent)} .sw-line.today{background:var(--bad)}
+.teamgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:16px;align-items:start}
+.teamcard.mine{border-color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
+.acts{list-style:none;margin:8px 0 8px;padding:0;display:grid}
+.acts li{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.acts li:first-child{border-top:0}
+.acts li.done .a-name{color:var(--muted);text-decoration:line-through}
+.acts li.done .a-name input{text-decoration:line-through;color:var(--muted)}
+.a-main{min-width:0;flex:1;display:grid;gap:4px}
+.a-name{font-weight:600;font-size:14px}
+.a-name input{width:100%;font-weight:600}
+.a-meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.a-owner{min-height:28px!important;width:140px;font-size:12px!important;padding:0 6px!important}
+.a-link{min-height:28px!important;width:100%;font-size:12px!important;padding:0 6px!important}
+.a-side{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.a-side select{min-height:32px;font-size:12px}
+.a-due{display:flex;gap:4px;align-items:center;font-size:12px}
+.a-due input{min-height:28px;font-size:12px;padding:0 4px}
+.tl-rel{position:absolute;top:0;width:0;border-left:2px dashed var(--accent);z-index:2;pointer-events:none}
+.tl-rel span{position:absolute;top:2px;left:4px;font-size:11px;font-weight:600;color:var(--accent);background:var(--surface);padding:0 4px;border-radius:var(--r-sm);white-space:nowrap;border:1px solid var(--line)}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:12px 16px;border-radius:var(--r);z-index:60;box-shadow:var(--float-shadow);max-width:calc(100% - 32px);font-size:14px;line-height:20px}
 footer.dev-footer{border-top:1px solid var(--line);margin-top:24px}
 footer.dev-footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;align-items:center;padding-block:16px 24px;font-size:12px;line-height:16px;color:var(--muted)}
@@ -302,7 +367,8 @@ const depTag=d=>{const t=depType(d);return `<span class="deptag" title="${esc(de
 const onText=on=>on==='dev'?'starts development':on==='released'?'is released':'reaches '+SNAME(on);
 const depLong=(d,a='This project',b)=>`${a} can't ${d.then} until ${b||esc(byId(d.id)?.name||'?')} ${onText(d.on)}`;
 const normDep=d=>typeof d==='number'?{id:d,on:'released',then:'start'}:d;
-const BF0={sec:'all',stage:'',start:'',rel:'',health:''};
+const BF0={sec:'all',stage:'',start:'',rel:'',health:'',bundle:''};
+const SEL=new Set(); let dragRow=null;
 let BF={...BF0}; try{BF={...BF0,...JSON.parse(localStorage.getItem('roadmap-filters')||'{}')}}catch(e){}
 const saveBF=()=>{try{localStorage.setItem('roadmap-filters',JSON.stringify(BF))}catch(e){}};
 const bfActive=()=>Object.keys(BF0).some(k=>BF[k]!==BF0[k]);
@@ -315,6 +381,7 @@ function bfMatch(p,f,sec){
   if(BF.sec!=='all'&&BF.sec!==sec)return false;
   if(BF.stage&&p.stage!==BF.stage)return false;
   if(BF.health&&healthKey(p)!==BF.health)return false;
+  if(BF.bundle&&(BF.bundle==='none'?!!p.releaseId:String(p.releaseId)!==BF.bundle))return false;
   const shipped=sec==='shipped';
   if(BF.start){
     if(shipped)return false;
@@ -331,7 +398,7 @@ function bfMatch(p,f,sec){
   return true;
 }
 let depDraft={type:'FS',id:'',then:'start',on:'uat'};
-const VIEWS=[['home','Home'],['backlog','Backlog'],['board','Stages'],['timeline','Timeline'],['capacity','Capacity'],['alerts','Alerts']];
+const VIEWS=[['home','Home'],['backlog','Backlog'],['board','Stages'],['timeline','Timeline'],['releases','Releases'],['capacity','Capacity'],['alerts','Alerts']];
 
 // ---------- sample data (fictional) ----------
 function d(daysAgo){const t=new Date();t.setDate(t.getDate()-daysAgo);return t.toISOString().slice(0,10)}
@@ -368,11 +435,59 @@ function seed(){
   };
 }
 
+// ---------- releases: model ----------
+const REL_STATUS=[['planning','Planning'],['locked','Scope locked'],['released','Released']];
+const ACT_STATUS=[['todo','Not started'],['prog','In progress'],['done','Done'],['blocked','Blocked']];
+const REL_TEAMS=['Product','Development','QA','Documentation','Marketing','Support','Customer Success','Release management'];
+const ROLE_TEAM={marketing:'Marketing',support:'Support',cs:'Customer Success'};
+const TEAM_OWNER={'Product':'Jordan K.','Development':'Priya S.','QA':'Tom H.','Documentation':'Kim W.','Marketing':'Ana R.','Support':'Leo M.','Customer Success':'Sara B.','Release management':'Sam R.'};
+const ACT_TEMPLATE=[
+  ['Release management','Publish the release calendar',-42],
+  ['Product','Lock the release scope',-35],
+  ['Marketing','Draft the launch plan',-35],
+  ['Development','Code freeze',-21],
+  ['Documentation','Finish system documentation',-14],
+  ['Development','Build the release candidate',-14],
+  ['Product','Draft release notes',-14],
+  ['QA','UAT sign-off for every project',-10],
+  ['Marketing','Marketing materials ready',-10],
+  ['Customer Success','Brief customers on what is coming',-10],
+  ['Documentation','Update help centre articles',-7],
+  ['Support','Train the support team',-7],
+  ['Release management','Confirm the rollback plan',-5],
+  ['Customer Success','Notify key accounts',-3],
+  ['Product','Go or no-go meeting',-2],
+  ['Development','Deploy to production',0],
+  ['Marketing','Publish the announcement',0],
+  ['Release management','Post-release health check',3]];
+const DAY=864e5;
+const today0=(()=>{const t=new Date();t.setHours(0,0,0,0);return t})();
+const isoD=t=>`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+const parseD=s=>new Date(s+'T00:00:00');
+const addDays=(s,n)=>{const t=parseD(s);t.setDate(t.getDate()+n);return isoD(t)};
+const daysBetween=(a,b)=>Math.round((b-a)/DAY);
+const quarterOf=t=>({y:t.getFullYear(),q:Math.floor(t.getMonth()/3)+1});
+const nextQuarter=({y,q})=>q===4?{y:y+1,q:1}:{y,q:q+1};
+const quarterTarget=(y,q)=>{const end=new Date(y,q*3,0);end.setDate(end.getDate()-14);return isoD(end)};
+const quarterName=(y,q)=>`Q${q} ${y} release`;
+function makeActs(){return ACT_TEMPLATE.map(([team,name,off],i)=>({id:i+1,team,name,off,status:'todo',owner:TEAM_OWNER[team]||'',link:''}))}
+function seedReleases(){
+  const q0=quarterOf(new Date()), q1=nextQuarter(q0);
+  const r1={id:1,name:quarterName(q0.y,q0.q),date:quarterTarget(q0.y,q0.q),status:'locked',theme:'Self-serve billing and enterprise sign-in.',activities:makeActs(),updates:[]};
+  const r2={id:2,name:quarterName(q1.y,q1.q),date:quarterTarget(q1.y,q1.q),status:'planning',theme:'Offline mobile, a new public API and a permissions overhaul.',activities:makeActs(),updates:[]};
+  r1.activities.forEach(a=>{const dd=daysBetween(today0,parseD(addDays(r1.date,a.off)));a.status=dd<0?'done':dd<16?'prog':'todo'});
+  const mk=r1.activities.find(a=>a.name==='Marketing materials ready');if(mk)mk.status='blocked';
+  r1.activities.filter(a=>a.status==='done'&&a.team==='Documentation').forEach(a=>a.link='https://docs.example.com/system');
+  r2.activities[0].status='prog';
+  return [r1,r2];
+}
+
 // ---------- state ----------
 const KEY='roadmap-prototype-v3';
 let S; try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!S||S.v!==3)S=seed();
 S.projects.forEach(p=>p.deps=(p.deps||[]).map(normDep));
+if(!S.releases){S.releases=seedReleases();S.nextRelId=3;const RS={1:1,2:1,4:2,6:2,9:2,5:2,11:2};S.projects.forEach(p=>{if(p.releaseId===undefined)p.releaseId=RS[p.id]&&!DONE.has(p.stage)?RS[p.id]:null})}
 let role='product'; try{role=localStorage.getItem(KEY+'-role')||'product'}catch(e){}
 if(!ROLES.find(r=>r.id===role))role='product';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -527,34 +642,45 @@ function vHome(){
     const title=role==='marketing'?'Upcoming launches':'Get ready for';
     rolePanel=`<section class="panel"><header><h2>${title}</h2><span class="label">${dl.name}</span></header><div class="body">${list.length?`<ul class="list">${list.map(p=>{const x=p.deliverables[key];const st=delState(p,dl);return `<li><div class="t">${plink(p)}<div>Ships around ${F[p.id].finish!==null?fmtW(relW(F[p.id])):'TBD'}${x.link?` · <a href="${esc(x.link)}" target="_blank" rel="noopener">Open doc</a>`:''}</div></div><div class="r"><span class="pill ${st==='done'?'ok':st==='late'?'bad':st==='prog'?'warn':'n'}">${DSTATUS.find(s=>s[0]===x.status)[1]}</span></div></li>`}).join('')}</ul>`:'<p class="empty">Nothing coming up yet.</p>'}</div></section>`;
   }
+  const nextRel=[...S.releases].filter(r=>r.status!=='released').sort((a,b)=>a.date.localeCompare(b.date))[0];
+  let relPanel='';
+  if(nextRel){const st=relStats(nextRel,F);const team=ROLE_TEAM[role];const acts=team?nextRel.activities.filter(a=>a.team===team).sort((a,b)=>a.off-b.off):[];
+    relPanel=`<section class="panel"><header><h2>Next release</h2><a href="#releases">All releases</a></header><div class="body">
+      <div class="t"><a href="#release-${nextRel.id}" style="font-weight:600;font-size:16px">${esc(nextRel.name)}</a> ${relStatusPill(nextRel)}</div>
+      <div class="muted" style="font-size:14px"><span class="num">${fmtD(nextRel.date)}</span> · ${countdown(nextRel.date)} · ${st.ps.length} projects</div>
+      ${bar(st.done,st.total)}<div class="muted" style="font-size:12px">${st.done} of ${st.total} release activities done${st.atRisk?` · <span style="color:var(--bad)">${st.atRisk} ${st.atRisk===1?'project':'projects'} ready late</span>`:''}</div>
+      ${team?`<span class="label" style="display:block;margin-top:12px">${team} activities</span><ul class="list">${acts.map(a=>`<li><div class="t">${esc(a.name)}<div>Due ${fmtD(actDue(nextRel,a))}</div></div><div class="r"><span class="pill ${a.status==='done'?'ok':actLate(nextRel,a)?'bad':a.status==='blocked'?'warn':'n'}">${actLate(nextRel,a)?'Overdue':ACT_STATUS.find(s=>s[0]===a.status)[1]}</span></div></li>`).join('')}</ul>`:`<ul class="list" style="margin-top:8px">${st.ps.map((p,i)=>`<li><div class="t">${plink(p)}</div><div class="r">${riskPill(st.risks[i])}</div></li>`).join('')}</ul>`}
+    </div></section>`}
   const mine=S.alerts.filter(a=>a.roles.includes(role)).slice(0,6);
   const alertsPanel=`<section class="panel"><header><h2>Your alerts</h2><a href="#alerts">Manage</a></header><div class="body">${mine.length?`<ul class="list feed">${mine.map(alertLi).join('')}</ul>`:'<p class="empty">No alerts yet. Subscribe to stages on the Alerts page.</p>'}</div></section>`;
   return viewHead('Roadmap at a glance',`${open.length} open projects. Forecasts assume ${(S.capacity.devs*S.capacity.roadmapPct/100).toFixed(1)} dev-weeks of roadmap capacity per week.`)+roleNote()+pipeline+
-    `<div class="grid2">${rolePanel}<section class="panel"><header><h2>Next to ship</h2><a href="#timeline">Timeline</a></header><div class="body">${shipList}</div></section>${alertsPanel}</div>`;
+    `<div class="grid2">${rolePanel}<section class="panel"><header><h2>Next to ship</h2><a href="#timeline">Timeline</a></header><div class="body">${shipList}</div></section>${relPanel}${alertsPanel}</div>`;
 }
-function alertLi(a){const p=byId(a.pid);if(!p)return '';return `<li><div class="t">${plink(p)}<div>Entered ${stageChip(a.stage)}${a.by?` · moved by ${esc(a.by)}`:''}</div></div><div class="r when">${fmtD(a.date)}</div></li>`}
+function alertLi(a){if(a.kind==='release'){const r=relById(a.rid);if(!r)return '';return `<li><div class="t"><a href="#release-${r.id}">${esc(r.name)}</a><div>${esc(a.msg)}${a.by?` · from ${esc(a.by)}`:''}</div></div><div class="r when">${fmtD(a.date)}</div></li>`}const p=byId(a.pid);if(!p)return '';return `<li><div class="t">${plink(p)}<div>Entered ${stageChip(a.stage)}${a.by?` · moved by ${esc(a.by)}`:''}</div></div><div class="r when">${fmtD(a.date)}</div></li>`}
 
 function vBacklog(){
   const {F}=forecast(); const ed=canEdit();
   const com=committedList(), later=laterList(), shipped=S.projects.filter(p=>DONE.has(p.stage));
-  const mv=(p,dir,dis,label)=>`<button data-move="${p.id}" data-dir="${dir}" aria-label="${label}" title="${label}" ${dis?'disabled':''}><svg class="ico" viewBox="0 0 24 24"><path d="${dir<0?'m18 15-6-6-6 6':'m6 9 6 6 6-6'}"/></svg></button>`;
+  const canDrag=ed&&!bfActive();
+  const grip=p=>`<button class="grip" data-grip="${p.id}" aria-label="Re-rank ${esc(p.name)}: drag, or press the up and down arrow keys" title="Drag to re-rank"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/></svg></button>`;
   const row=(p,i,sec,n,offset)=>{const f=F[p.id]||{};const open=sec!=='shipped';
     const start=!open?'<span class="muted">Done</span>':f.inflight?'<span class="muted">In flight</span>':f.noSize?'<span class="pill warn">Needs an estimate</span>':f.unsched?'<span class="pill bad">Blocked</span>':fmtW(f.start);
     const fin=!open?fmtD(([...p.history].reverse().find(h=>h.to==='released')||{}).date||new Date().toISOString().slice(0,10)):f.finish!=null?fmtW(relW(f)):NONE;
-    const up=sec==='committed'?(i===0?[true,'Move up']:[false,'Move up']):(i===0?[false,'Move into committed']:[false,'Move up']);
-    const down=sec==='committed'?(i===n-1?[ACTIVE.has(p.stage),'Move out of committed']:[false,'Move down']):[i===n-1,'Move down'];
+    const rr=p.releaseId?relById(p.releaseId):null; const rk=rr&&open?projRisk(rr,p,F):null;
     if(!bfMatch(p,f,sec))return '';
-    return `<tr><td class="rank">${open&&ed&&!bfActive()?`<span class="moves">${mv(p,-1,up[0],up[1])}${mv(p,1,down[0],down[1])}</span>`:''}${open?offset+i+1:''}</td>
-    <td><a class="name" href="#project-${p.id}" data-open="${p.id}">${esc(p.name)}</a><div class="sub">${esc(p.owner)}${f.waitingOn?` · waits for ${esc(byId(f.waitingOn.id).name)} to ${f.waitingOn.on==='dev'?'start':f.waitingOn.on==='released'?'ship':'reach '+SNAME(f.waitingOn.on)}`:''}</div></td>
+    return `<tr data-rowdrop="${p.id}" data-sec="${sec}" ${open&&canDrag?`draggable="true" data-rowdrag="${p.id}"`:''}><td class="rank">${open&&ed?`<input type="checkbox" class="pick" data-pick="${p.id}" ${SEL.has(p.id)?'checked':''} aria-label="Select ${esc(p.name)}">`:''}${open&&canDrag?grip(p):''}${open?offset+i+1:''}</td>
+    <td><a class="name" draggable="false" href="#project-${p.id}" data-open="${p.id}">${esc(p.name)}</a><div class="sub">${esc(p.owner)}${f.waitingOn?` · waits for ${esc(byId(f.waitingOn.id).name)} to ${f.waitingOn.on==='dev'?'start':f.waitingOn.on==='released'?'ship':'reach '+SNAME(f.waitingOn.on)}`:''}</div></td>
     <td>${stageChip(p.stage)}</td>
     <td class="right num">${wk(p.budget)}</td>
     <td class="right num">${wk(p.estimate)}</td>
     <td>${budgetPill(p)}<div class="sub" style="white-space:nowrap">${spendLine(p)}</div></td>
     <td><div class="deps">${p.deps.map(d=>`<span class="chip" title="${esc(depLong(d,p.name))}">${esc(byId(d.id)?.name||'?')} ${depTag(d)}</span>`).join('')||'<span class="muted">None</span>'}</div></td>
-    <td class="num">${start}</td><td class="num">${fin}</td><td>${delDots(p)}</td></tr>`};
-  const head=(t,d,n)=>`<tr class="section"><td colspan="10"><b>${t}</b> <span class="muted">· ${n} ${n===1?'project':'projects'}${d?' · '+d:''}</span></td></tr>`;
+    <td class="num">${start}</td><td class="num">${fin}</td>
+    <td>${rr?`<a class="chip" draggable="false" href="#release-${rr.id}">${esc(rr.name)}</a><div class="sub num">${fmtD(rr.date)}</div>${rk&&rk.k==='risk'?`<span class="pill bad">Ready ${-rk.days} days late</span>`:''}`:'<span class="muted">None</span>'}</td>
+    <td>${delDots(p)}</td></tr>`};
+  const head=(t,d,n,key)=>`<tr class="section" data-secdrop="${key}"><td colspan="11"><b>${t}</b> <span class="muted">· ${n} ${n===1?'project':'projects'}${d?' · '+d:''}</span></td></tr>`;
   const sect=(key,t,d,list,offset,emptyMsg)=>{if(BF.sec!=='all'&&BF.sec!==key)return '';const rows=list.map((p,i)=>row(p,i,key,list.length,offset));const shown=rows.filter(Boolean).length;
-    if(bfActive()&&!shown)return '';return head(t,d,bfActive()?shown:list.length)+(rows.join('')||`<tr><td colspan="10" class="muted">${emptyMsg}</td></tr>`)};
+    if(bfActive()&&!shown)return '';return head(t,d,bfActive()?shown:list.length,key)+(rows.join('')||`<tr><td colspan="11" class="muted">${emptyMsg}</td></tr>`)};
   const total=S.projects.length;
   const shownCount=[...com.map(p=>bfMatch(p,F[p.id]||{},'committed')),...later.map(p=>bfMatch(p,F[p.id]||{},'later')),...shipped.map(p=>bfMatch(p,{},'shipped'))].filter(Boolean).length;
   const sel=(id,key,label,opts,anyLabel)=>`<div class="f"><label for="${id}">${label}</label><select id="${id}" data-bf="${key}"><option value="">${anyLabel}</option>${opts.map(([v,l])=>`<option value="${v}" ${BF[key]===v?'selected':''}>${l}</option>`).join('')}</select></div>`;
@@ -564,14 +690,19 @@ function vBacklog(){
     ${sel('bf-start','start','Forecast start',START_OPTS,'Any time')}
     ${sel('bf-rel','rel','Forecast release',REL_OPTS,'Any time')}
     ${sel('bf-health','health','Budget health',HEALTH_OPTS,'Any')}
+    ${sel('bf-bundle','bundle','Release',[['none','Not in a release'],...S.releases.map(r=>[String(r.id),r.name])],'Any release')}
     <div class="count">Showing ${shownCount} of ${total}${bfActive()?' <button class="btn sm ghost" data-act="clearbf">Clear filters</button>':''}</div>
-  </div>${bfActive()&&ed?'<p class="muted" style="font-size:12px;margin:-8px 0 12px">Re-ranking is off while filters are on. Clear filters to use the arrows.</p>':''}`;
-  return viewHead('Backlog',ed?'Committed work is forecast first, then everything else in rank order. Use the arrows to re-rank or to move a project between sections.':'Committed work is forecast first, then everything else in rank order. Dates come from development capacity and dependencies.',ed?'<button class="btn primary" data-act="add"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add project</button>':'')+
-  filterBar+`<div class="tablewrap"><table><thead><tr><th>#</th><th>Project</th><th>Stage</th><th class="right">Budget</th><th class="right">Estimate</th><th>Budget health</th><th>Depends on</th><th>Forecast start</th><th>Forecast release</th><th>Deliverables</th></tr></thead><tbody>
+  </div>${bfActive()&&ed?'<p class="muted" style="font-size:12px;margin:-8px 0 12px">Drag-and-drop ranking is off while filters are on. Clear filters to re-rank.</p>':''}`;
+  const selOpen=[...SEL].filter(id=>byId(id)&&!DONE.has(byId(id).stage));
+  const bulk=ed&&selOpen.length?`<div class="bulkbar" role="region" aria-label="Selected projects"><b>${selOpen.length} selected</b>
+    <label for="bulk-rel" class="muted">Add to</label><select id="bulk-rel" data-bulk="1"><option value="">Choose a release…</option>${S.releases.filter(r=>r.status!=='released').map(r=>`<option value="${r.id}">${esc(r.name)} (${fmtD(r.date)})</option>`).join('')}<option value="new">New release for these projects</option></select>
+    <button class="btn sm" data-act="bulkrm">Remove from release</button><button class="btn sm ghost" data-act="bulkclear">Clear selection</button></div>`:'';
+  return viewHead('Backlog',ed?'Committed work is forecast first, then everything else in rank order. Drag a row to re-rank it or to move it between sections. Tick projects to add them to a release.':'Committed work is forecast first, then everything else in rank order. Dates come from development capacity and dependencies.',ed?'<button class="btn primary" data-act="add"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add project</button>':'')+
+  filterBar+bulk+`<div class="tablewrap"><table><thead><tr><th>#</th><th>Project</th><th>Stage</th><th class="right">Budget</th><th class="right">Estimate</th><th>Budget health</th><th>Depends on</th><th>Forecast start</th><th>Forecast release</th><th>Release</th><th>Deliverables</th></tr></thead><tbody>
   ${sect('committed','Committed','being built or planned for the near term',com,0,'Nothing committed yet. Move a project up from everything else.')}
   ${sect('later','Everything else','ideas and future work',later,com.length,'Nothing here yet. Add a project to start.')}
   ${sect('shipped','Shipped','',shipped,0,'Nothing shipped yet.')}
-  ${shownCount?'':'<tr><td colspan="10"><p class="empty">No projects match these filters. <button class="btn sm ghost" data-act="clearbf">Clear filters</button></p></td></tr>'}</tbody></table></div>
+  ${shownCount?'':'<tr><td colspan="11"><p class="empty">No projects match these filters. <button class="btn sm ghost" data-act="clearbf">Clear filters</button></p></td></tr>'}</tbody></table></div>
   <div class="legend"><span>Budget and estimate are in developer weeks. Budget health compares actual spend to budget.</span><span>Deliverables, in order: ${DELIVS.map(x=>x.name).join(', ')}.</span><span><span class="dots"><i class="done"></i></span> Done</span><span><span class="dots"><i class="prog"></i></span> In progress</span><span><span class="dots"><i class="late"></i></span> Overdue for this stage</span></div>`;
 }
 
@@ -603,9 +734,10 @@ function vTimeline(){
     const bar=f.start==null?`<div class="bar-after" style="left:8px">Can't be scheduled: ${f.noSize?'needs an estimate or a budget':'check its dependencies'}</div>`:
       `<div class="bar ${f.inflight?'inprog':''}" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${f.start*W}px;width:${Math.max(1,f.finish-f.start+1)*W-2}px" title="${esc(p.name)}: development ${fmtW(f.start)} to ${fmtW(f.finish+1)}">${(f.finish-f.start+1)*W>110?esc(SNAME(p.stage)):''}</div>${relW(f)>f.finish+1?`<div class="bar uat" style="--sc:var(--s-uat);left:${(f.finish+1)*W}px;width:${(relW(f)-f.finish-1)*W-2}px" title="UAT and release"></div>`:''}<div class="bar-after" style="left:${relW(f)*W+6}px">${fmtW(relW(f))}</div>`;
     return `<div class="tl-row"><div class="tl-name"><span class="rk">${i+1}</span>${plink(p)}</div><div class="tl-track" style="width:${N*W+120}px">${grid}${bar}</div></div>`}).join('');
-  return viewHead('Timeline','Solid bars are development, pale bars are UAT and release, and striped bars are already in progress. Dotted lines run from the point a dependency is met to where the next project can start or finish.')+
+  return viewHead('Timeline','Solid bars are development, pale bars are UAT and release, and striped bars are already in progress. Dotted lines run from the point a dependency is met to where the next project can start or finish. Dashed blue lines mark planned releases.')+
    `<div class="tl"><div class="tl-inner"><div class="tl-row head"><div class="tl-name"><span class="label">Project</span></div><div class="tl-track" style="width:${N*W+120}px">${months}</div></div>${rows}
    <svg class="links" style="left:var(--namew);width:${N*W}px;height:${HH+open.length*RH}px">${links}</svg>
+   ${S.releases.filter(r=>r.status!=='released').map(r=>{const x=daysBetween(monday,parseD(r.date))/7*W;return x>=0&&x<=N*W?`<div class="tl-rel" style="left:calc(var(--namew) + ${x.toFixed(1)}px);height:${HH+open.length*RH}px"><span>${esc(r.name)}</span></div>`:''}).join('')}
    <div class="tl-today" style="left:var(--namew);top:0;height:${HH+open.length*RH}px" title="This week"></div></div></div>
    <div class="legend">${STAGES.filter(s=>!DONE.has(s.id)).map(s=>`<span>${stageChip(s.id)}</span>`).join('')}<span><span style="display:inline-block;width:2px;height:12px;background:var(--bad);vertical-align:middle"></span> This week</span></div>`;
 }
@@ -640,6 +772,133 @@ function vAlerts(){
   <div class="grid2"><section class="panel"><header><h2>Alert history</h2></header><div class="body"><ul class="list feed">${S.alerts.slice(0,20).map(a=>{const li=alertLi(a);return li.replace('</div></div>',` · to ${a.roles.length?a.roles.map(r=>esc(ROLES.find(x=>x.id===r).name.replace(' (you)',''))).join(', '):'nobody'}</div></div>`)}).join('')}</ul></div></section></div>`;
 }
 
+// ---------- releases: helpers that need the forecast ----------
+const relById=id=>(S.releases||[]).find(r=>r.id===id);
+const relProjects=r=>S.projects.filter(p=>p.releaseId===r.id);
+const readyDate=f=>f&&f.finish!=null?wkDate(relW(f)):null;
+const actDue=(r,a)=>addDays(r.date,a.off);
+const actLate=(r,a)=>a.status!=='done'&&parseD(actDue(r,a))<today0;
+const canTeam=team=>canEdit()||ROLE_TEAM[role]===team;
+function projRisk(r,p,F){
+  if(DONE.has(p.stage))return {k:'shipped'};
+  const rd=readyDate(F[p.id]);if(!rd)return {k:'unknown'};
+  const slack=daysBetween(rd,parseD(r.date));
+  return {k:slack<0?'risk':slack<7?'tight':'ok',days:slack,rd};
+}
+function riskPill(x){
+  if(x.k==='shipped')return '<span class="pill ok">Already shipped</span>';
+  if(x.k==='unknown')return '<span class="pill n">No forecast</span>';
+  if(x.k==='risk')return `<span class="pill bad">Ready ${-x.days} days late</span>`;
+  if(x.k==='tight')return `<span class="pill warn">Ready ${x.days} days before</span>`;
+  return `<span class="pill ok">Ready ${x.days} days early</span>`;
+}
+function relStats(r,F){
+  const ps=relProjects(r);const risks=ps.map(p=>projRisk(r,p,F));
+  const acts=r.activities;const done=acts.filter(a=>a.status==='done').length;
+  return {ps,risks,atRisk:risks.filter(x=>x.k==='risk').length,onTime:risks.filter(x=>x.k==='ok'||x.k==='tight'||x.k==='shipped').length,done,total:acts.length,late:acts.filter(a=>actLate(r,a)).length,blocked:acts.filter(a=>a.status==='blocked').length};
+}
+const countdown=s=>{const n=daysBetween(today0,parseD(s));return n===0?'Today':n>0?`In ${n} days`:`${-n} days ago`};
+const relStatusPill=r=>`<span class="pill ${r.status==='released'?'ok':r.status==='locked'?'warn':'n'}">${REL_STATUS.find(x=>x[0]===r.status)[1]}</span>`;
+const bar=(n,t)=>`<div class="pbar" role="img" aria-label="${n} of ${t} done"><i style="width:${t?Math.round(n/t*100):0}%"></i></div>`;
+const relChip=r=>`<a class="chip" href="#release-${r.id}">${esc(r.name)}</a>`;
+function newRelease(name,date){
+  const id=S.nextRelId++;const r={id,name,date,status:'planning',theme:'',activities:makeActs(),updates:[]};
+  S.releases.push(r);return r;
+}
+function addToRelease(ids,rid){ids.forEach(id=>{const p=byId(id);if(p&&!DONE.has(p.stage))p.releaseId=rid})}
+function relAlert(r,msg,roles){
+  roles=roles||['exec','marketing','support','cs','dev','product'];
+  S.alerts.unshift({kind:'release',date:isoD(today0),rid:r.id,msg,roles,by:R().name});
+  r.updates.unshift({date:isoD(today0),by:R().name,msg});
+}
+function suggestBundles(F){
+  const loose=ranked().filter(p=>!p.releaseId&&F[p.id]&&F[p.id].finish!=null);
+  const groups={};
+  for(const p of loose){const rd=readyDate(F[p.id]);const {y,q}=quarterOf(rd);const k=`${y}-${q}`;(groups[k]??={y,q,ps:[]}).ps.push(p)}
+  return Object.values(groups).sort((a,b)=>a.y-b.y||a.q-b.q).map(g=>{
+    const existing=S.releases.find(r=>{const t=parseD(r.date);const qq=quarterOf(t);return qq.y===g.y&&qq.q===g.q&&r.status!=='released'});
+    return {...g,existing};
+  });
+}
+
+// ---------- releases: list view ----------
+function vReleases(){
+  const {F}=forecast(); const ed=canEdit();
+  const rs=[...S.releases].sort((a,b)=>a.date.localeCompare(b.date));
+  const cards=rs.map(r=>{const st=relStats(r,F);return `<a class="relcard" href="#release-${r.id}">
+      <div class="rc-top"><h2>${esc(r.name)}</h2>${relStatusPill(r)}</div>
+      <div class="rc-date"><span class="num">${fmtD(r.date)}</span><span class="muted">${countdown(r.date)}</span></div>
+      ${r.theme?`<p class="muted rc-theme">${esc(r.theme)}</p>`:''}
+      <div class="rc-chips">${st.ps.map(p=>`<span class="chip">${esc(p.name)}</span>`).join('')||'<span class="muted">No projects yet</span>'}</div>
+      <div class="rc-stats"><div><span class="label">Activities</span>${bar(st.done,st.total)}<span class="num">${st.done} of ${st.total} done</span></div>
+      <div class="rc-flags">${st.atRisk?`<span class="pill bad">${st.atRisk} ${st.atRisk===1?'project':'projects'} late</span>`:'<span class="pill ok">Projects on time</span>'}${st.late?`<span class="pill bad">${st.late} overdue</span>`:''}${st.blocked?`<span class="pill warn">${st.blocked} blocked</span>`:''}</div></div>
+    </a>`}).join('');
+  const loose=ranked().filter(p=>!p.releaseId);
+  const sugg=suggestBundles(F);
+  const relOpts=rs.filter(r=>r.status!=='released').map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('');
+  const looseList=loose.length?`<ul class="list">${loose.map(p=>{const f=F[p.id];return `<li><div class="t">${plink(p)}<div>${stageChip(p.stage)} ${p.committed?'Committed':'Everything else'} · ready ${f&&f.finish!=null?fmtW(relW(f)):'not forecast'}</div></div><div class="r">${ed?`<select data-reladd="${p.id}" aria-label="Add ${esc(p.name)} to a release"><option value="">Add to release…</option>${relOpts}</select>`:''}</div></li>`}).join('')}</ul>`:'<p class="empty">Every open project is in a release.</p>';
+  const suggList=sugg.length?`<ul class="list">${sugg.map(g=>`<li><div class="t"><b>${quarterName(g.y,g.q)}</b><div>${g.ps.length} ${g.ps.length===1?'project':'projects'} ready that quarter: ${g.ps.map(p=>esc(p.name)).join(', ')}</div></div><div class="r">${ed?(g.existing?`<button class="btn sm" data-bundle="${g.y}-${g.q}">Add to ${esc(g.existing.name)}</button>`:`<button class="btn sm" data-bundle="${g.y}-${g.q}">Create release</button>`):''}</div></li>`).join('')}</ul>`:'<p class="empty">No suggestions. Unbundled projects need a forecast first.</p>';
+  return viewHead('Releases','A release bundles finished projects into one planned launch, with its own date and the activities every team has to finish before it ships.',ed?'<button class="btn primary" data-act="newrel"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add release</button>':'')+roleNote()+
+  `<div class="relcards">${cards||'<p class="empty">No releases yet. Add one, or create one from a suggestion below.</p>'}</div>
+   <div class="grid2"><section class="panel"><header><h2>Suggested bundles</h2><span class="muted">By the quarter each project is ready</span></header><div class="body">${suggList}</div></section>
+   <section class="panel"><header><h2>Not in a release yet</h2><span class="muted">${loose.length}</span></header><div class="body">${looseList}</div></section></div>`;
+}
+
+// ---------- releases: one release ----------
+let relId=null, confirmRelDel=false;
+function vRelease(){
+  const r=relById(relId); if(!r)return viewHead('Release not found','It may have been deleted.')+'<p><a href="#releases">Back to releases</a></p>';
+  const {F}=forecast(); const ed=canEdit(); const st=relStats(r,F); const myTeam=ROLE_TEAM[role];
+  const dis=ed?'':'disabled';
+  const head=`<div class="viewhead"><div style="min-width:0;flex:1"><a href="#releases" class="muted" style="font-size:14px">Releases</a>
+      ${ed?`<input type="text" id="r-name" data-rf="name" value="${esc(r.name)}" class="p-name" style="margin-top:4px;max-width:520px" aria-label="Release name">`:`<h1>${esc(r.name)}</h1>`}
+      ${ed?`<input type="text" id="r-theme" data-rf="theme" value="${esc(r.theme)}" placeholder="What this release is about, in one line" style="margin-top:8px;width:100%;max-width:720px" aria-label="Release theme">`:(r.theme?`<p>${esc(r.theme)}</p>`:'')}</div>
+    <div class="relhead-ctl"><div class="f"><label for="r-date">Release date</label><input type="date" id="r-date" data-rf="date" value="${r.date}" ${dis}></div>
+      <div class="f"><label for="r-status">Status</label><select id="r-status" data-rf="status" ${dis}>${REL_STATUS.map(([v,l])=>`<option value="${v}" ${r.status===v?'selected':''}>${l}</option>`).join('')}</select></div></div></div>`;
+  const kpis=`<div class="relkpis panel"><div><span class="label">Release date</span><b class="num">${fmtD(r.date)}</b><span class="muted">${countdown(r.date)}</span></div>
+    <div><span class="label">Projects ready in time</span><b class="num">${st.onTime} of ${st.ps.length}</b>${st.atRisk?`<span class="pill bad">${st.atRisk} late</span>`:'<span class="muted">All on track</span>'}</div>
+    <div><span class="label">Activities done</span><b class="num">${st.done} of ${st.total}</b>${bar(st.done,st.total)}</div>
+    <div><span class="label">Needs attention</span><b class="num">${st.late+st.blocked}</b><span class="muted">${st.late} overdue · ${st.blocked} blocked</span></div></div>`;
+  // projects
+  const others=ranked().filter(p=>p.releaseId!==r.id);
+  const projRows=st.ps.map((p,i)=>{const f=F[p.id]||{};const x=st.risks[i];const ds=['uat','mkt','sys'].map(k=>{const dl=DELIVS.find(d=>d.id===k);const s=delState(p,dl);return `<span class="pill ${s==='done'?'ok':s==='late'?'bad':s==='prog'?'warn':'n'}" title="${dl.name}">${dl.name.replace('Documentation','docs').replace('System ','System ')}: ${DSTATUS.find(z=>z[0]===p.deliverables[k].status)[1]}</span>`}).join(' ');
+    return `<tr><td><a class="name" href="#project-${p.id}" data-open="${p.id}">${esc(p.name)}</a><div class="sub">${esc(p.owner)}</div></td><td>${stageChip(p.stage)}</td><td class="num">${DONE.has(p.stage)?'Shipped':f.finish!=null?fmtW(relW(f)):NONE}</td><td>${riskPill(x)}</td><td><div class="deps">${ds}</div></td><td class="right">${ed?`<button class="btn sm ghost" data-relrm="${p.id}">Remove</button>`:''}</td></tr>`}).join('');
+  const projTable=`<section class="panel"><header><h2>Projects in this release</h2><span class="muted">${st.ps.length}</span></header><div class="body">
+    <div style="overflow-x:auto"><table class="reltable"><thead><tr><th>Project</th><th>Stage</th><th>Forecast ready</th><th>Against release date</th><th>Hand-offs</th><th></th></tr></thead><tbody>${projRows||'<tr><td colspan="6" class="muted">No projects yet. Add one below or from the backlog.</td></tr>'}</tbody></table></div>
+    ${ed?`<div class="row" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><select id="r-addp" data-relpick="1" aria-label="Add a project"><option value="">Add a project…</option>${others.map(p=>`<option value="${p.id}">${esc(p.name)}${p.releaseId?' (in '+esc(relById(p.releaseId)?.name||'')+')':''}</option>`).join('')}</select></div>`:''}
+  </div></section>`;
+  // swimlane of activities
+  const offs=r.activities.map(a=>a.off);const minO=Math.min(-42,...offs)-3,maxO=Math.max(7,...offs)+3;const span=maxO-minO;
+  const pos=o=>((o-minO)/span*100).toFixed(2);
+  const todayOff=daysBetween(parseD(r.date),today0);
+  const teams=REL_TEAMS.filter(t=>r.activities.some(a=>a.team===t));
+  const swim=`<section class="panel"><header><h2>Release runway</h2><span class="muted">Every activity, by team, against the release date</span></header><div class="body"><div class="swim">
+    ${teams.map(t=>`<div class="sw-row ${t===myTeam?'mine':''}"><span class="sw-name">${t}</span><div class="sw-track">${r.activities.filter(a=>a.team===t).map(a=>`<i class="sw-dot ${actLate(r,a)?'late':a.status}" style="left:${pos(a.off)}%" title="${esc(a.name)}: ${fmtD(actDue(r,a))}, ${ACT_STATUS.find(s=>s[0]===a.status)[1]}"></i>`).join('')}</div></div>`).join('')}
+    <div class="sw-row sw-axis"><span class="sw-name"></span><div class="sw-track">${[-42,-28,-14,0].filter(o=>o>=minO).map(o=>`<span class="sw-tick" style="left:${pos(o)}%">${o===0?'Release':o/7+' wk'}</span>`).join('')}</div></div>
+    <div class="sw-line rel" style="left:calc(var(--swn) + (100% - var(--swn)) * ${pos(0)/100})"></div>
+    ${todayOff>=minO&&todayOff<=maxO?`<div class="sw-line today" style="left:calc(var(--swn) + (100% - var(--swn)) * ${pos(todayOff)/100})" title="Today"></div>`:''}
+  </div><div class="legend"><span><i class="sw-dot done sw-key"></i> Done</span><span><i class="sw-dot prog sw-key"></i> In progress</span><span><i class="sw-dot todo sw-key"></i> Not started</span><span><i class="sw-dot blocked sw-key"></i> Blocked</span><span><i class="sw-dot late sw-key"></i> Overdue</span><span><span style="display:inline-block;width:2px;height:12px;background:var(--bad);vertical-align:middle"></span> Today</span></div></div></section>`;
+  // team cards
+  const order=[...teams.filter(t=>t===myTeam),...teams.filter(t=>t!==myTeam)];
+  const teamCards=order.map(t=>{const acts=r.activities.filter(a=>a.team===t).sort((a,b)=>a.off-b.off);const done=acts.filter(a=>a.status==='done').length;const can=canTeam(t);
+    return `<section class="panel teamcard ${t===myTeam?'mine':''}"><header><h3>${t}${t===myTeam?' <span class="pill n">Your team</span>':''}</h3><span class="muted num">${done} of ${acts.length}</span></header><div class="body">${bar(done,acts.length)}
+      <ul class="acts">${acts.map(a=>{const late=actLate(r,a);return `<li class="${a.status} ${late?'late':''}">
+        <div class="a-main"><div class="a-name">${ed?`<input type="text" id="a-${a.id}-n" data-act-id="${a.id}" data-ak="name" value="${esc(a.name)}" aria-label="Activity name">`:esc(a.name)}</div>
+          <div class="a-meta"><span class="num">Due ${fmtD(actDue(r,a))}</span>${late?' <span class="pill bad">Overdue</span>':''} · ${can?`<input type="text" id="a-${a.id}-o" data-act-id="${a.id}" data-ak="owner" value="${esc(a.owner)}" placeholder="Owner" aria-label="Owner" class="a-owner">`:esc(a.owner||'No owner')}</div>
+          ${can?`<input type="url" id="a-${a.id}-l" data-act-id="${a.id}" data-ak="link" value="${esc(a.link)}" placeholder="Link to the work (https://)" aria-label="Link" class="a-link">`:a.link?`<a class="linktext" href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.link.replace(/^https?:\/\//,''))}</a>`:''}</div>
+        <div class="a-side">${can?`<select id="a-${a.id}-s" data-act-id="${a.id}" data-ak="status" aria-label="Status">${ACT_STATUS.map(([v,l])=>`<option value="${v}" ${a.status===v?'selected':''}>${l}</option>`).join('')}</select>`:`<span class="pill ${a.status==='done'?'ok':a.status==='blocked'?'warn':late?'bad':'n'}">${ACT_STATUS.find(s=>s[0]===a.status)[1]}</span>`}
+          ${ed?`<div class="a-due"><label class="muted" for="a-${a.id}-d">Due</label><input type="date" id="a-${a.id}-d" data-act-id="${a.id}" data-ak="due" value="${actDue(r,a)}"></div><button class="btn sm ghost" data-actrm="${a.id}" aria-label="Remove activity">Remove</button>`:''}</div></li>`}).join('')}</ul>
+      ${ed?`<button class="btn sm ghost" data-actadd="${esc(t)}"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add activity</button>`:''}
+    </div></section>`}).join('');
+  const updates=`<section class="panel"><header><h2>Team updates</h2><span class="muted">Sent to C-Suite, Marketing, Support and CS</span></header><div class="body">
+    ${ed?`<div class="field"><label for="r-msg">Send an update</label><textarea id="r-msg" rows="2" placeholder="For example: Scope is locked. Marketing materials are due 06-Dec-2026."></textarea><div><button class="btn primary sm" data-act="relsend">Send update</button></div></div>`:''}
+    ${r.updates.length?`<ul class="list feed">${r.updates.map(u=>`<li><div class="t"><div style="color:var(--fg);font-size:14px">${esc(u.msg)}</div><div>${esc(u.by)}</div></div><div class="r when">${fmtD(u.date)}</div></li>`).join('')}</ul>`:'<p class="empty">No updates sent yet.</p>'}
+  </div></section>`;
+  const note=myTeam?`<div class="rolenote"><b>${esc(R().name)}</b><span>Your team's activities are first. You can update their status, owner and link.</span></div>`:roleNote();
+  return head+note+kpis+projTable+swim+`<h2 style="margin:32px 0 12px">Activities by team</h2><div class="teamgrid">${teamCards}</div><div class="grid2">${updates}</div>`+
+   (ed?`<div style="margin-top:24px"><button class="btn danger" data-act="reldel">${confirmRelDel?'Delete this release? Its projects stay in the backlog. Click again to confirm':'Delete release'}</button></div>`:'');
+}
+
 // ---------- project drawer ----------
 function drawer(){
   const dr=document.getElementById('drawer'),sc=document.getElementById('scrim');
@@ -664,6 +923,7 @@ function drawer(){
       <section class="panel"><div class="body facts">
         ${fact('Forecast',`<span class="num">${fc}</span>${f.fromBudget&&!DONE.has(p.stage)?'<div class="muted" style="font-weight:400;font-size:12px">Based on the budget until there is an estimate</div>':''}`)}
         ${fact('Owner',esc(p.owner),`<input type="text" id="p-owner" data-f="owner" value="${esc(p.owner)}">`)}
+        ${fact('Release',p.releaseId&&relById(p.releaseId)?relChip(relById(p.releaseId)):'<span class="muted">None</span>',DONE.has(p.stage)?null:`<select id="p-rel" data-prel="1"><option value="">Not in a release</option>${S.releases.filter(r=>r.status!=='released'||r.id===p.releaseId).map(r=>`<option value="${r.id}" ${p.releaseId===r.id?'selected':''}>${esc(r.name)} (${fmtD(r.date)})</option>`).join('')}</select>`)}
         ${fact('Backlog section',p.committed?'Committed':'Everything else',DONE.has(p.stage)?null:`<select id="p-com" data-f="committed"><option value="1" ${p.committed?'selected':''}>Committed</option><option value="0" ${p.committed?'':'selected'}>Everything else</option></select>`)}
         ${fact('Budget (dev-weeks)',`<span class="num">${wk(p.budget)}</span>`,`<input type="number" id="p-budget" data-f="budget" min="0" step="1" value="${p.budget}">`)}
         ${fact('Estimate (dev-weeks)',(p.estimate?`<span class="num">${p.estimate}</span>`:NONE),`<input type="number" id="p-est" data-f="estimate" min="0" step="1" value="${p.estimate}">`)}
@@ -699,19 +959,22 @@ let confirmDel=null;
 let view='home';
 function route(){
   const h=location.hash.slice(1);
-  const m=h.match(/^project-(\d+)$/);
-  if(m){openId=+m[1];if(!byId(openId))openId=null}else{openId=null;if(VIEWS.some(v=>v[0]===h))view=h}
+  const m=h.match(/^project-(\d+)$/), mr=h.match(/^release-(\d+)$/);
+  if(m){openId=+m[1];if(!byId(openId))openId=null}
+  else if(mr){openId=null;view='release';relId=+mr[1];confirmRelDel=false;window.scrollTo(0,0)}
+  else{openId=null;if(VIEWS.some(v=>v[0]===h))view=h}
   render();
 }
 function render(){
-  document.getElementById('nav').innerHTML=VIEWS.map(([id,n])=>`<a href="#${id}" ${id===view?'aria-current="page"':''}>${n}</a>`).join('');
+  document.getElementById('nav').innerHTML=VIEWS.map(([id,n])=>`<a href="#${id}" ${id===view||(view==='release'&&id==='releases')?'aria-current="page"':''}>${n}</a>`).join('');
   const sel=document.getElementById('role');
   sel.innerHTML=ROLES.map(r=>`<option value="${r.id}" ${r.id===role?'selected':''}>${r.name}${r.edit?'':' (view only)'}</option>`).join('');
-  const fn={home:vHome,backlog:vBacklog,board:vBoard,timeline:vTimeline,capacity:vCapacity,alerts:vAlerts}[view];
+  const fn={home:vHome,backlog:vBacklog,board:vBoard,timeline:vTimeline,releases:vReleases,release:vRelease,capacity:vCapacity,alerts:vAlerts}[view];
   document.getElementById('main').innerHTML=fn();
   drawer();
 }
-function closeDrawer(){openId=null;confirmDel=null;history.replaceState(null,'','#'+view);drawer()}
+const curHash=()=>view==='release'?'release-'+relId:view;
+function closeDrawer(){openId=null;confirmDel=null;history.replaceState(null,'','#'+curHash());drawer()}
 
 // ---------- events ----------
 document.addEventListener('click',e=>{
@@ -719,7 +982,7 @@ document.addEventListener('click',e=>{
   const op=t.closest('[data-open]');
   if(op&&!t.closest('button')){e.preventDefault();openId=+op.dataset.open;confirmDel=null;history.replaceState(null,'','#project-'+openId);drawer();document.getElementById('drawer').scrollTop=0;return}
   const mv=t.closest('[data-move]');
-  if(mv&&canEdit()){const id=+mv.dataset.move,dir=+mv.dataset.dir;const L=ranked();const i=L.findIndex(p=>p.id===id);const p=L[i];const j=i+dir;
+  if(mv&&canEdit()&&false){const id=+mv.dataset.move,dir=+mv.dataset.dir;const L=ranked();const i=L.findIndex(p=>p.id===id);const p=L[i];const j=i+dir;
     const q=L[j];
     if(q&&q.committed===p.committed){[L[i],L[j]]=[L[j],L[i]]}
     else if(p.committed&&dir>0){if(ACTIVE.has(p.stage))return;p.committed=false;toast(`${p.name} moved to everything else.`)}
@@ -730,6 +993,16 @@ document.addEventListener('click',e=>{
   const ud=t.closest('[data-undep]'); if(ud&&canEdit()){const p=byId(openId);p.deps.splice(+ud.dataset.undep,1);save();render();toast('Dependency removed.');return}
   const act=t.closest('[data-act]')?.dataset.act;
   if(act==='close'||t.id==='scrim'){closeDrawer();return}
+  const ed=canEdit(); const r=view==='release'?relById(relId):null;
+  if(act==='newrel'&&ed){const t0=new Date(today0);t0.setDate(t0.getDate()+60);const nr=newRelease('New release',isoD(t0));save();location.hash='release-'+nr.id;return}
+  const bd=t.closest('[data-bundle]'); if(bd&&ed){const {F}=forecast();const g=suggestBundles(F).find(x=>`${x.y}-${x.q}`===bd.dataset.bundle);if(!g)return;const rel=g.existing||newRelease(quarterName(g.y,g.q),quarterTarget(g.y,g.q));addToRelease(g.ps.map(x=>x.id),rel.id);save();render();toast(`${g.ps.length} ${g.ps.length===1?'project':'projects'} added to ${rel.name}.`);return}
+  const rrm=t.closest('[data-relrm]'); if(rrm&&ed){byId(+rrm.dataset.relrm).releaseId=null;save();render();toast('Removed from the release.');return}
+  const aa=t.closest('[data-actadd]'); if(aa&&ed&&r){const id=Math.max(0,...r.activities.map(a=>a.id))+1;r.activities.push({id,team:aa.dataset.actadd,name:'New activity',off:-7,status:'todo',owner:TEAM_OWNER[aa.dataset.actadd]||'',link:''});save();render();setTimeout(()=>document.getElementById(`a-${id}-n`)?.select(),0);return}
+  const ar=t.closest('[data-actrm]'); if(ar&&ed&&r){r.activities=r.activities.filter(a=>a.id!==+ar.dataset.actrm);save();render();toast('Activity removed.');return}
+  if(act==='relsend'&&ed&&r){const m=document.getElementById('r-msg').value.trim();if(!m){toast('Write the update first, then send it.');return}relAlert(r,m);save();render();toast('Update sent to C-Suite, Marketing, Support and Customer Success.');return}
+  if(act==='reldel'&&ed&&r){if(!confirmRelDel){confirmRelDel=true;render();return}S.projects.forEach(p=>{if(p.releaseId===r.id)p.releaseId=null});S.releases=S.releases.filter(x=>x!==r);save();location.hash='releases';toast('Release deleted. Its projects are still in the backlog.');return}
+  if(act==='bulkclear'){SEL.clear();render();return}
+  if(act==='bulkrm'&&ed){SEL.forEach(id=>{const p=byId(id);if(p)p.releaseId=null});const n=SEL.size;SEL.clear();save();render();toast(`${n} ${n===1?'project':'projects'} removed from their release.`);return}
   const bs=t.closest('[data-bfsec]'); if(bs){BF.sec=bs.dataset.bfsec;saveBF();render();return}
   if(act==='clearbf'){BF={...BF0};saveBF();render();return}
   if(act==='adddep'&&canEdit()){const p=byId(openId);const dt=DEP_TYPES.find(x=>x.id===depDraft.type);const d={id:+depDraft.id,on:dt.on||depDraft.on,then:dt.then||depDraft.then};if(!d.id||wouldCycle(p.id,d.id))return;if(!p.deps.some(x=>x.id===d.id&&x.on===d.on&&x.then===d.then))p.deps.push(d);depDraft.id='';save();render();toast('Dependency added. Forecasts updated.');return}
@@ -741,8 +1014,23 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openId)closeDrawer(
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='role'){role=t.value;try{localStorage.setItem(KEY+'-role',role)}catch(_){};const h=R().home;if(!openId){view=h;history.replaceState(null,'','#'+view)}render();toast(`Now viewing as ${R().name}.`);return}
+  if(t.dataset.actId){const r=relById(relId);const a=r&&r.activities.find(x=>x.id===+t.dataset.actId);if(!a)return;const k=t.dataset.ak;
+    if((k==='name'||k==='due')&&!canEdit())return; if(!canTeam(a.team))return;
+    if(k==='due'){if(t.value)a.off=daysBetween(parseD(r.date),parseD(t.value))}else a[k]=t.value;
+    save();render();if(k!=='status')document.getElementById(t.id)?.focus();if(k==='status')toast(`${a.name}: ${ACT_STATUS.find(s=>s[0]===a.status)[1]}.`);return}
+  if(t.dataset.pick){const id=+t.dataset.pick;t.checked?SEL.add(id):SEL.delete(id);render();return}
   if(t.dataset.bf){BF[t.dataset.bf]=t.value;saveBF();render();document.getElementById(t.id)?.focus();return}
   if(!canEdit()&&!t.dataset.sub)return;
+  if(t.dataset.bulk&&t.value){const {F}=forecast();const ids=[...SEL].filter(id=>byId(id)&&!DONE.has(byId(id).stage));let rel;
+    if(t.value==='new'){const last=ids.map(id=>readyDate(F[id])).filter(Boolean).sort((a,b)=>b-a)[0]||new Date(today0);const {y,q}=quarterOf(last);rel=newRelease(quarterName(y,q),quarterTarget(y,q))}else rel=relById(+t.value);
+    addToRelease(ids,rel.id);SEL.clear();save();render();toast(`${ids.length} ${ids.length===1?'project':'projects'} added to ${rel.name}.`);return}
+  if(t.dataset.reladd&&t.value){byId(+t.dataset.reladd).releaseId=+t.value;save();render();toast('Added to the release.');return}
+  if(t.dataset.relpick&&t.value){byId(+t.value).releaseId=relId;save();render();toast('Project added to the release.');return}
+  if(t.dataset.prel&&p){p.releaseId=t.value?+t.value:null;save();render();return}
+  if(t.dataset.rf){const r=relById(relId);if(!r)return;const k=t.dataset.rf;if(k==='date'&&!t.value)return;const old=r[k];r[k]=t.value;
+    if(k==='status'&&old!==t.value)relAlert(r,`Status changed to ${REL_STATUS.find(x=>x[0]===t.value)[1]}.`);
+    if(k==='date'&&old!==t.value)relAlert(r,`Release date moved to ${fmtD(t.value)}.`);
+    save();render();document.getElementById(t.id)?.focus();return}
   const p=openId&&byId(openId);
   if(t.dataset.f==='committed'&&p){p.committed=t.value==='1';S.projects.splice(S.projects.indexOf(p),1);p.committed?S.projects.push(p):S.projects.unshift(p);S.projects=[...committedList(),...laterList(),...S.projects.filter(x=>DONE.has(x.stage))];save();render();return}
   if(t.dataset.f&&p){const k=t.dataset.f;let v=t.value;if(t.type==='number'){v=Math.max(0,+v||0);if(k==='progress')v=Math.min(100,v);if(k==='maxDevs')v=Math.max(1,v);if(k==='spent'||k==='budget'||k==='estimate')v=Math.round(v*2)/2}p[k]=v;save();render();return}
@@ -751,11 +1039,44 @@ document.addEventListener('change',e=>{
   if(t.dataset.cap){let v=Math.max(0,+t.value||0);if(t.dataset.cap==='roadmapPct')v=Math.min(100,v);S.capacity[t.dataset.cap]=v;save();render();setTimeout(()=>document.getElementById(t.id)?.focus(),0);return}
   if(t.dataset.sub){const r=t.dataset.sub;if(!(canEdit()||r===role))return;const set=new Set(S.subs[r]||[]);t.checked?set.add(t.dataset.stage):set.delete(t.dataset.stage);S.subs[r]=[...set];save();toast('Alert preferences saved.');return}
 });
+// drag and drop ranking in the backlog
+function placeProject(id,targetId,after,secKey){
+  const p=byId(id); if(!p||DONE.has(p.stage))return;
+  const L=ranked().filter(x=>x!==p); const tgt=targetId?byId(targetId):null;
+  if(tgt&&DONE.has(tgt.stage))return;
+  const toCommitted=tgt?tgt.committed:secKey==='committed';
+  if(!toCommitted&&ACTIVE.has(p.stage)){toast(`${p.name} is in ${SNAME(p.stage)}, so it has to stay committed.`);return}
+  const was=p.committed; p.committed=toCommitted;
+  const idx=tgt?L.indexOf(tgt)+(after?1:0):(toCommitted?0:L.filter(x=>x.committed).length);
+  L.splice(idx,0,p);
+  S.projects=[...L.filter(x=>x.committed),...L.filter(x=>!x.committed),...S.projects.filter(x=>DONE.has(x.stage))];
+  save();render();
+  if(was!==toCommitted)toast(toCommitted?`${p.name} is now committed.`:`${p.name} moved to everything else.`);
+}
+function moveBy(id,dir){
+  const L=ranked();const i=L.findIndex(x=>x.id===id);const j=i+dir;if(i<0||j<0||j>=L.length)return;
+  const p=L[i],q=L[j];
+  if(q.committed===p.committed)placeProject(id,q.id,dir>0,null);
+  else placeProject(id,null,false,q.committed?'committed':'later');
+}
+document.addEventListener('keydown',e=>{const g=e.target.closest?.('[data-grip]');if(!g||!canEdit())return;if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();const id=+g.dataset.grip;moveBy(id,e.key==='ArrowUp'?-1:1);document.querySelector(`[data-grip="${id}"]`)?.focus()}});
+const clearDrop=()=>document.querySelectorAll('.drop-before,.drop-after,.drop-into').forEach(x=>x.classList.remove('drop-before','drop-after','drop-into'));
+document.addEventListener('dragstart',e=>{const tr=e.target.closest?.('[data-rowdrag]');if(!tr)return;dragRow=+tr.dataset.rowdrag;e.dataTransfer.setData('text/plain','row:'+dragRow);e.dataTransfer.effectAllowed='move';setTimeout(()=>tr.classList.add('dragging'),0)});
+document.addEventListener('dragend',()=>{dragRow=null;clearDrop();document.querySelectorAll('tr.dragging').forEach(x=>x.classList.remove('dragging'))});
+document.addEventListener('dragover',e=>{if(dragRow==null)return;const tr=e.target.closest?.('tr[data-rowdrop],tr[data-secdrop]');if(!tr)return;
+  if(tr.dataset.sec==='shipped'||tr.dataset.secdrop==='shipped')return;
+  e.preventDefault();clearDrop();
+  if(tr.dataset.secdrop)tr.classList.add('drop-into');
+  else{const b=tr.getBoundingClientRect();tr.classList.add(e.clientY<b.top+b.height/2?'drop-before':'drop-after')}});
+document.addEventListener('drop',e=>{if(dragRow==null)return;const tr=e.target.closest?.('tr[data-rowdrop],tr[data-secdrop]');if(!tr)return;e.preventDefault();
+  const id=dragRow;dragRow=null;
+  if(tr.dataset.secdrop){clearDrop();placeProject(id,null,false,tr.dataset.secdrop);return}
+  const after=tr.classList.contains('drop-after');clearDrop();const tid=+tr.dataset.rowdrop;if(tid===id){render();return}placeProject(id,tid,after,null)});
 // drag and drop on the stage board
 document.addEventListener('dragstart',e=>{const c=e.target.closest?.('[data-drag]');if(c){e.dataTransfer.setData('text/plain',c.dataset.drag);e.dataTransfer.effectAllowed='move'}});
 document.addEventListener('dragover',e=>{const col=e.target.closest?.('[data-col]');if(col&&canEdit()){e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x!==col&&x.classList.remove('over'));col.classList.add('over')}});
 document.addEventListener('dragleave',e=>{const col=e.target.closest?.('[data-col]');if(col&&!col.contains(e.relatedTarget))col.classList.remove('over')});
-document.addEventListener('drop',e=>{const col=e.target.closest?.('[data-col]');if(!col)return;e.preventDefault();col.classList.remove('over');const p=byId(+e.dataTransfer.getData('text/plain'));if(p)setStage(p,col.dataset.col)});
+document.addEventListener('drop',e=>{const col=e.target.closest?.('[data-col]');if(!col||dragRow!=null)return;e.preventDefault();col.classList.remove('over');const p=byId(+e.dataTransfer.getData('text/plain'));if(p)setStage(p,col.dataset.col)});
 window.addEventListener('hashchange',route);
 if(!location.hash)view=R().home;
 route();
