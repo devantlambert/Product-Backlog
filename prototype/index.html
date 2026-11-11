@@ -442,12 +442,12 @@ function forecast(){
   const rk=ranked();
   const order=[...rk.filter(p=>ACTIVE.has(p.stage)),...rk.filter(p=>!ACTIVE.has(p.stage))];
   const F={}; const used=[];
-  for(const p of order)F[p.id]={rem:Math.max(0,p.estimate*(1-(ACTIVE.has(p.stage)?p.progress:0)/100)),start:ACTIVE.has(p.stage)?0:null,done:null,finish:null,noEst:!p.estimate};
+  for(const p of order){const size=+p.estimate||+p.budget||0;F[p.id]={rem:Math.max(0,size*(1-(ACTIVE.has(p.stage)?p.progress:0)/100)),start:ACTIVE.has(p.stage)?0:null,done:null,finish:null,noEst:!p.estimate,fromBudget:!p.estimate&&!!p.budget,noSize:!size&&!ACTIVE.has(p.stage)}}
   const H=260;
   for(let w=0;w<H;w++){
     let left=cap;
     for(const p of order){
-      const f=F[p.id]; if(f.done!==null)continue;
+      const f=F[p.id]; if(f.done!==null||f.noSize)continue;
       if(f.start===null&&!p.deps.filter(d=>d.then==='start').every(d=>{const m=msWeek(F,d.id,d.on);return m!==null&&m<=w}))continue;
       if(f.rem<=1e-9){f.start??=w;f.done=w;continue}
       if(left<=1e-9)continue;
@@ -461,7 +461,7 @@ function forecast(){
         if(p.deps.filter(d=>d.then==='finish').every(d=>{const m=msWeek(F,d.id,d.on);return m!==null&&w+1+UATW()>=m})){f.finish=w;changed=true}
       }}
     used.push(cap-left);
-    if(order.every(p=>F[p.id].finish!==null))break;
+    if(order.every(p=>F[p.id].finish!==null||F[p.id].noSize))break;
   }
   for(const p of order){const f=F[p.id];
     if(ACTIVE.has(p.stage))f.inflight=true;
@@ -507,11 +507,11 @@ function vHome(){
     const items=[];
     for(const p of S.projects){
       for(const dl of DELIVS){const st=delState(p,dl);if(st==='late')items.push([p,`${dl.name} is not done`,'bad'])}
-      if(!DONE.has(p.stage)&&!p.estimate)items.push([p,'No estimate, so it can\'t be forecast','warn']);
+      if(!DONE.has(p.stage)&&!p.estimate)items.push([p,p.budget?'No estimate yet. The forecast is using the budget instead.':'No estimate or budget, so it can\'t be forecast','warn']);
       if(!DONE.has(p.stage)&&!p.budget)items.push([p,'No budget assigned','warn']);
       if(p.budget&&p.spent>p.budget)items.push([p,`Spent ${+p.spent} wk against a ${+p.budget} wk budget`,'bad']);
       else if(p.budget&&p.estimate>p.budget&&!DONE.has(p.stage))items.push([p,`Estimate of ${+p.estimate} wk is over its ${+p.budget} wk budget`,'warn']);
-      if(F[p.id]?.unsched&&p.estimate)items.push([p,'Can\'t be scheduled. Check its dependencies.','bad']);
+      if(F[p.id]?.unsched&&!F[p.id].noSize)items.push([p,'Can\'t be scheduled. Check its dependencies.','bad']);
     }
     rolePanel=`<section class="panel"><header><h2>Needs attention</h2><span class="muted">${items.length}</span></header><div class="body">${items.length?`<ul class="list">${items.map(([p,m,c])=>`<li><div class="t">${plink(p)}<div>${m}</div></div><div class="r"><span class="pill ${c}">${c==='bad'?'Fix':'Check'}</span></div></li>`).join('')}</ul>`:'<p class="empty">Nothing needs attention.</p>'}</div></section>`;
   } else if(role==='exec'){
@@ -539,7 +539,7 @@ function vBacklog(){
   const com=committedList(), later=laterList(), shipped=S.projects.filter(p=>DONE.has(p.stage));
   const mv=(p,dir,dis,label)=>`<button data-move="${p.id}" data-dir="${dir}" aria-label="${label}" title="${label}" ${dis?'disabled':''}><svg class="ico" viewBox="0 0 24 24"><path d="${dir<0?'m18 15-6-6-6 6':'m6 9 6 6 6-6'}"/></svg></button>`;
   const row=(p,i,sec,n,offset)=>{const f=F[p.id]||{};const open=sec!=='shipped';
-    const start=!open?'<span class="muted">Done</span>':f.inflight?'<span class="muted">In flight</span>':f.unsched?'<span class="pill bad">Blocked</span>':fmtW(f.start);
+    const start=!open?'<span class="muted">Done</span>':f.inflight?'<span class="muted">In flight</span>':f.noSize?'<span class="pill warn">Needs an estimate</span>':f.unsched?'<span class="pill bad">Blocked</span>':fmtW(f.start);
     const fin=!open?fmtD(([...p.history].reverse().find(h=>h.to==='released')||{}).date||new Date().toISOString().slice(0,10)):f.finish!=null?fmtW(relW(f)):NONE;
     const up=sec==='committed'?(i===0?[true,'Move up']:[false,'Move up']):(i===0?[false,'Move into committed']:[false,'Move up']);
     const down=sec==='committed'?(i===n-1?[ACTIVE.has(p.stage),'Move out of committed']:[false,'Move down']):[i===n-1,'Move down'];
@@ -600,7 +600,7 @@ function vTimeline(){
       links+=`<path d="M${x1} ${y1} H${mx} V${y2} H${x2}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3"/><circle cx="${x1}" cy="${y1}" r="2" fill="var(--muted)"/><circle cx="${x2}" cy="${y2}" r="3" fill="var(--accent)"/>`;
     })});
   const rows=open.map((p,i)=>{const f=F[p.id];
-    const bar=f.start==null?`<div class="bar-after" style="left:8px">Can't be scheduled: ${p.estimate?'check its dependencies':'needs an estimate'}</div>`:
+    const bar=f.start==null?`<div class="bar-after" style="left:8px">Can't be scheduled: ${f.noSize?'needs an estimate or a budget':'check its dependencies'}</div>`:
       `<div class="bar ${f.inflight?'inprog':''}" data-open="${p.id}" style="--sc:var(--s-${p.stage});left:${f.start*W}px;width:${Math.max(1,f.finish-f.start+1)*W-2}px" title="${esc(p.name)}: development ${fmtW(f.start)} to ${fmtW(f.finish+1)}">${(f.finish-f.start+1)*W>110?esc(SNAME(p.stage)):''}</div>${relW(f)>f.finish+1?`<div class="bar uat" style="--sc:var(--s-uat);left:${(f.finish+1)*W}px;width:${(relW(f)-f.finish-1)*W-2}px" title="UAT and release"></div>`:''}<div class="bar-after" style="left:${relW(f)*W+6}px">${fmtW(relW(f))}</div>`;
     return `<div class="tl-row"><div class="tl-name"><span class="rk">${i+1}</span>${plink(p)}</div><div class="tl-track" style="width:${N*W+120}px">${grid}${bar}</div></div>`}).join('');
   return viewHead('Timeline','Solid bars are development, pale bars are UAT and release, and striped bars are already in progress. Dotted lines run from the point a dependency is met to where the next project can start or finish.')+
@@ -653,7 +653,7 @@ function drawer(){
   const dt=DEP_TYPES.find(t=>t.id===depDraft.type);
   const draft={id:+depDraft.id,on:dt.on||depDraft.on,then:dt.then||depDraft.then};
   const dupe=p.deps.some(d=>d.id===draft.id&&d.on===draft.on&&d.then===draft.then);
-  const fc=DONE.has(p.stage)?'Shipped':f.unsched?'Can\'t be scheduled':f.heldBy?`${fmtW(f.start)} to ${fmtW(relW(f))} (release held by a dependency)`:f.inflight?`In flight · ships ${fmtW(relW(f))}`:`${fmtW(f.start)} to ${fmtW(relW(f))}`;
+  const fc=DONE.has(p.stage)?'Shipped':f.noSize?'Add an estimate or a budget to forecast':f.unsched?'Can\'t be scheduled':f.heldBy?`${fmtW(f.start)} to ${fmtW(relW(f))} (release held by a dependency)`:f.inflight?`In flight · ships ${fmtW(relW(f))}`:`${fmtW(f.start)} to ${fmtW(relW(f))}`;
   const fact=(label,val,input)=>`<div><span class="label">${label}</span><div class="v">${ed&&input?input:val}</div></div>`;
   dr.innerHTML=`<div class="dh"><div style="min-width:0;flex:1">
       ${ed?`<input type="text" id="p-name" data-f="name" value="${esc(p.name)}" class="p-name" aria-label="Project name">`:`<h2>${esc(p.name)}</h2>`}
@@ -662,7 +662,7 @@ function drawer(){
     <div class="db">
       <section><span class="label">Stage</span><div class="stepper" style="margin-top:6px">${STAGES.map(s=>`<button data-stage-to="${s.id}" class="${s.id===p.stage?'cur':SI(s.id)<SI(p.stage)?'past':''}" style="--sc:var(--s-${s.id})" ${ed?'':'disabled'}>${s.name}</button>`).join('')}</div>${ed?'<p class="muted" style="font-size:.78rem;margin:6px 0 0">Click a stage to move the project. Teams subscribed to that stage get an alert.</p>':''}</section>
       <section class="panel"><div class="body facts">
-        ${fact('Forecast',`<span class="num">${fc}</span>`)}
+        ${fact('Forecast',`<span class="num">${fc}</span>${f.fromBudget&&!DONE.has(p.stage)?'<div class="muted" style="font-weight:400;font-size:12px">Based on the budget until there is an estimate</div>':''}`)}
         ${fact('Owner',esc(p.owner),`<input type="text" id="p-owner" data-f="owner" value="${esc(p.owner)}">`)}
         ${fact('Backlog section',p.committed?'Committed':'Everything else',DONE.has(p.stage)?null:`<select id="p-com" data-f="committed"><option value="1" ${p.committed?'selected':''}>Committed</option><option value="0" ${p.committed?'':'selected'}>Everything else</option></select>`)}
         ${fact('Budget (dev-weeks)',`<span class="num">${wk(p.budget)}</span>`,`<input type="number" id="p-budget" data-f="budget" min="0" step="1" value="${p.budget}">`)}
