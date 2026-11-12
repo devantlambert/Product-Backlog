@@ -24,3 +24,8 @@ Next step: a Next.js + Supabase app (auth, roles, shared database, email/Slack a
 Styled with the Dev brand standard (tokens v1.0.0): paper neutrals, slate blue Roadmap accent, IBM Plex Sans, 8 px corners, dates as 10-Nov-2026.
 
 All sample data is fictional.
+
+## Documentation
+
+- [`docs/SYSTEM.md`](docs/SYSTEM.md): how the code is structured (data model, rendering, forecast engine, events). Start here to change the code.
+- [`handoff/SPEC.md`](handoff/SPEC.md): the product specification, for a rebuild.
