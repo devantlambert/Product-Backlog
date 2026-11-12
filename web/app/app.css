@@ -1,0 +1,9 @@
+/* App-only additions on top of the prototype's styles */
+.store-status{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.store-status .bad{color:var(--bad)}
+.auth-links{display:inline-flex;gap:8px;align-items:center}
+.boot{display:grid;place-items:center;min-height:60vh;color:var(--muted);font-size:14px}
+.login{max-width:440px;margin:15vh auto 0;padding:0 16px}
+.login form{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.login input{min-height:44px}
+html,body{margin:0}

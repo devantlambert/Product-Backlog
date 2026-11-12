@@ -19,7 +19,9 @@ A single place to manage the product backlog and share the state of every projec
 
 `prototype/index.html` is a self-contained clickable prototype with fictional sample data. Edits are stored in the browser's localStorage. Open the file in a browser to try it.
 
-Next step: a Next.js + Supabase app (auth, roles, shared database, email/Slack alerts) deployed on Vercel.
+`web/` is the real app: Next.js on Vercel with a shared Supabase database. It runs the prototype's screens on top of the database. Everyone can read, and only signed-in editors (Product and Head of Development) can change anything. Without Supabase settings, it falls back to browser storage like the prototype. Setup steps are in [web/README.md](web/README.md).
+
+Still to come: email or Slack alerts, inviting viewers by role, and moving screens one at a time from the prototype code to React components.
 
 Styled with the Dev brand standard (tokens v1.0.0): paper neutrals, slate blue Roadmap accent, IBM Plex Sans, 8 px corners, dates as 10-Nov-2026.
 
